@@ -1,0 +1,7 @@
+Write acknowledgements here in R Markdown syntax.
+
+\begin{flushright}
+Matthew Pawley \\
+Bath \\
+\today
+\end{flushright}

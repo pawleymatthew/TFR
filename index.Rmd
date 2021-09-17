@@ -1,0 +1,178 @@
+---
+#####################
+## thesis metadata ##
+#####################
+title: Statistical learning methods for dimension reduction in multivariate extremes
+author: Matthew Pawley
+date: September 2021
+supervisor: Dr Christian Rohrbeck and Dr Evangelos Evangelou
+course: Thesis Formulation Report
+department: Department of Mathematical Sciences
+university: University of Bath
+university-logo: templates/bath-logo.pdf
+
+#####################
+## FRONT MATTER ##
+#####################
+abstract: |
+  Extreme value theory provides a rigorous mathematical framework for modelling the tail behaviour of multivariate random variables, which is of interest in many application areas. Typically, the marginal distributions and extremal dependence structure are modelled separately. The extremal dependence structure describes the tail dependence between components and is characterised by a measure, called the angular measure, which must be estimated based on a small number of observed extreme events. Traditional methods for modelling the angular measure are limited to small or moderate dimensions. Recently, methods from unsupervised learning, such as clustering and principal components analysis (PCA), have been adapted to extremes and are better-equipped to handle high-dimensional settings. This report comprises a critical review of such methods, with a focus on the framework for extremal PCA developed by @cooleyDecompositionsDependenceHighdimensional2019 and the algorithm for generating hazard event sets proposed by @rohrbeckSimulatingFloodEvent2021. After applying these methods to analyse extreme rainfall in France, we outline avenues for future research.
+rri: |
+  This project concerns the development of statistical learning methodology for estimating the dependence structure in high-dimensional extremes. In particular, we aim to improve methods for simulating extreme events and consider an example of modelling extreme rainfall. Synthetic event sets may be used by practitioners in order to assess and mitigate risk. For example, the height of a new dam may be chosen so that it protects against all water levels that it is likely to experience within its projected life span of, say, 100 years. The importance of advancing modelling for climate extremes is demonstrated by the devestating human and environmental impacts of recent record-breaking flood and wildfire events.
+  
+  Our methods can be applied more broadly beyond climate extremes in a wide variety of areas, such as engineering, oceaography and finance. However, our modelling assumptions cannot hope to be valid, or even be entirely realistic, in all settings that may be considered. For example, asymptotic independence is a degenerate case in the framework that underlies our methods. In many settings, this will drastically bias the estimation of probabilities in the joint tail, leading to an under/overestimation of the risk of certain events. Thus, the methods should be used primarily as an exploratory tool. As mathematicians, we must guard against incentives to present our methods as practically applicable in settings or ways that they are not. This is especially true given the potentially severe consequences of the events considered in extremes. Most consumers of our research will be other academics or sophisticated practitioners, but the outcomes may occassionally be presented to broader audiences. In any case, we should endeavour to always make clear any assumptions on which our methods are based. 
+  
+  In this report, we illustrate and test our methods using an example dataset from the field of meteorology. There are no ethical considerations concerning the use of this dataset. The data was initially collected by Météo-France, the French meteorological service, and is freely available from the website of Dr Philippe Naveau, an academic at Laboratoire des Sciences du Climat et l'Environnement (LSCE) in France. 
+  
+acknowledgements: false
+dedication: false # if you want a dedication, write the words here
+abbreviations: false #"front-and-back-matter/abbreviations" # path to .tex file with abbreviations
+
+#######################
+## bibliography path ##
+#######################
+bibliography: references.bib
+bibliography-heading-in-pdf: Bibliography
+
+########################
+## PDF layout options ###
+#########################
+
+## correction highlighting ##
+corrections: true
+
+## binding / margins ##
+# 'nobind' for equal margins (PDF output)
+# 'twoside' for two-sided binding (mirror margins and blank pages)
+# leave blank for one-sided binding (left margin > right margin)
+page-layout: nobind
+
+## position of page numbers ##
+ordinary-page-number-foot-or-head: foot # 'foot' or 'head' 
+ordinary-page-number-position: C  # C=centre, R=right, L=left. If page-layout='twoside', O=odd pages and E=even pages, e.g. RO,LE = right on odd and left on even
+chapter-page-number-foot-or-head: foot # page number position on chapter pages
+chapter-page-number-position: C
+
+## position of running header ##
+running-header: true # indicate current chapter/section in header?
+running-header-foot-or-head: head
+running-header-position-leftmark: LO # marks the chapter. If page-layout='nobind', only this is used.
+running-header-position-rightmark: RE  # marks the section
+
+draft-mark: false # add a draft mark? ("DRAFT + date")
+draft-mark-foot-or-head: head # 'foot' or 'head' 
+draft-mark-position: R
+
+## section numbering ##
+section-numbering-depth: 2 # depth of heading numbers
+
+## tables of content ##
+toc-depth: 2 # to which depth should headings be included in table of contents?
+lof: true # include list of figures in front matter?
+lot: false # include list of tables in front matter?
+mini-toc: false  # include mini-table of contents at start of each chapter? (this just prepares it; need to also add \minitoc after each chapter title)
+mini-lot: false  # include mini-list of tables by start of each chapter?
+mini-lof: false  # include mini-list of figures by start of each chapter?
+
+## bibliography style ##
+bib-authoryear: true   # true to format references as author-year - false as numberic
+doi-in-bibliography: true # true to show DOI's in the bibliography
+
+## code block spacing ##
+space-before-code-block: 10pt
+space-after-code-block: 8pt
+
+## linespacing ##
+linespacing: 22pt plus2pt # 22pt is official for submission & library copies
+frontmatter-linespacing: 17pt plus1pt minus1pt # spacing in roman-numbered pages (acknowledgments, table of contents, etc.)
+
+### other stuff ###
+abstractseparate: false  # creates an additional front cover with title and abstract (needed for some submissions)
+hidelinks: false # hide the coloured links (e.g. citations, refs, urls)?
+
+#####################
+## output options  ##
+#####################
+output:
+  bookdown::pdf_book:
+    template: templates/template.tex
+    keep_tex: true # keep the LaTeX file used to generate the PDF
+    citation_package: biblatex  
+    pandoc_args: "--lua-filter=scripts_and_filters/colour_and_highlight.lua"
+  bookdown::bs4_book: 
+    css: 
+      - templates/bs4_style.css
+      - templates/corrections.css # remove to stop highlighting corrections
+    theme:
+      primary: "#6D1919"
+    repo: https://github.com/pawleymatthew/Combining-EVA-and-Statistical-Learning
+    pandoc_args: "--lua-filter=scripts_and_filters/colour_and_highlight.lua"
+  bookdown::gitbook:
+    css: templates/style.css
+    config:
+      sharing:
+        facebook: false
+        twitter: no
+        all: false
+  bookdown::word_document2:
+    toc: true   
+link-citations: true
+documentclass: book
+always_allow_html: true # allows html stuff in word (.docx) output
+knit: (function(input, ...) {bookdown::render_book(input, output_format = "bookdown::pdf_book")})
+# you can clean up the files LaTeX generates by running file.remove(list.files(pattern = "*.(log|mtc|maf|aux|bbl|blg|xml)")) in the R console
+#knit: (function(input, ...) {bookdown::render_book(input, output_format = "bookdown::bs4_book")})
+#knit: (function(input, ...) {bookdown::render_book(input, output_format = "bookdown::gitbook")})
+#knit: (function(input, ...) {bookdown::render_book(input, output_format = "bookdown::word_document2")})
+---
+
+```{r install_packages, include=FALSE}
+source('scripts_and_filters/install_packages_if_missing.R')
+library(knitr)
+library(tidyverse)
+library(mapdata)
+library(Matrix)
+library(lattice)
+library(EnvStats)
+library(graphicalExtremes)
+library(cluster)
+library(skmeans)
+library(plot3D)
+library(RColorBrewer)
+library(Directional)
+library(evd)
+library(boot)
+library(plotrix)
+```
+
+```{r set_seed, include=FALSE}
+set.seed(1234)
+```
+
+<!--
+This chunk refers to user-defined R files in /scripts_and_filters folder:
+create_chunk_options : custom chunk options
+wrap_lines : soft wrap lines in code
+-->
+
+```{r create_chunk_options, include=FALSE, eval=knitr::is_latex_output()}
+knitr::opts_chunk$set(echo = FALSE) # global chunk options
+source('scripts_and_filters/create_chunk_options.R')
+source('scripts_and_filters/wrap_lines.R') 
+```
+
+<!--
+This chunk reads in functions from R scripts.
+-->
+
+```{r}
+source("Code/plot.R")
+source("Code/simHR.R")
+source("Code/pca.R")
+source("Code/clustering.R")
+```
+
+
+<!-- This chunk includes the front page content in HTML output -->
+
+```{r ebook-welcome, child = 'front-and-back-matter/_welcome-ebook.Rmd', eval=knitr::is_html_output()}
+```
