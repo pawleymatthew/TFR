@@ -1,0 +1,99 @@
+# Background theory {#background-theory}
+\chaptermark{Background theory}
+\minitoc
+
+<!--
+• Summarise basic theory of MV extreme value theory:
+  • asymptotic theory and the multivariate max-domain-of-attraction-problem
+  • MEV distributions - exponent and angular measure
+  • Multivariate regular variation (+ sparse RV, N. Meyer?)
+  • measures of extremal dependence (EDM: p. 239 of Larsson and Resnick (2012))
+  • Coles (2001), Beirlant et al. (2004), Engelke and Ivanovs (2020)
+-->
+
+\noindent
+
+## Introduction
+
+In a wide variety of applications, the study of extreme events is inherently a multivariate problem. Consider the context of climate extremes. We may be interested in studying the co-occurrence of extremes of several meteorological variables, e.g.\ wind speed and precipitation as in @vignottoClusteringBivariateDependencies2021. Alternatively, we might analyse spatial data concerning a single variable at several different locations, e.g.\ @badorFutureSummerMegaheatwave2017 study temperature extremes in France. In each case the individual processes can be modelled using univariate techniques, but employing multivariate techniques that account for the inter-relationships between the processes' extremes will likely enhance the analysis. For example, in a spatial analysis we might expect that the data at one site could inform inferences at sites that are nearby or climatologically similar. Multivariate extreme value theory provides a rigorous mathematical framework for such analyses. 
+
+This chapter will present the basic mathematical theory of multivariate extremes within the framework of multivariate regular variation. Herein, we split the analysis of the tail of a random vector into two steps: modelling the marginals and modelling the extremal dependence structure. The former requires techniques from univariate extreme value theory, which is briefly summarised in Section \@ref(univariate-evt). The phenomenon of extremal dependence - how do extremes in one component of a random vector relate to extremes in the other components? - is central to multivariate extremes. This concept, and the general theory of multivariate extremes, will be discussed in Section \@ref(multivariate-evt). We will find that the extremal dependence structure of a random vector is characterised by a measure, called the angular measure. Its estimation, particularly in high-dimensional settings, is inherently challenging and will be the focus of subsequent chapters. 
+
+## Univariate extreme value theory {#univariate-evt}
+
+The theory of univariate extremes is well developed. The basic theory presented here is based on @beirlantStatisticsExtremesTheory2004 and @colesIntroductionStatisticalModeling2001; the reader is referred to these books for a more comprehensive overview.
+
+Suppose we are interested in modelling the (upper) tail behaviour of a random variable $X$ with distribution function $F$. Let $X_1,X_2,\ldots,$ be a sequence of independent observations of $X$. The key theoretical assumption underlying methods for modelling extremes is the so-called maximum domain of attraction condition (MDA): there exist sequences $\{a_n>0\}$ and $\{b_n\}$ and a non-degenerate random variable $Z\sim G$ such that
+\begin{equation}
+\frac{\max(X_1,\ldots,X_n)-b_n}{a_n} \ind Z, \qquad n\to\infty.
+(\#eq:convergence-of-maxima)
+\end{equation}
+We say that $X$ (or $F$) belongs to the maximum domain of attraction of $Z$ (or $G$). The distribution $G$ of $Z$ belongs to a parametric family of distributions called the generalised extreme value (GEV) distribution [@fisherLimitingFormsFrequency1928]. Its distribution function takes the following parametric form
+\begin{equation}
+G(z) = 
+\exp\left\lbrace -\left[1+\xi\left(\frac{z-\mu}{\sigma}\right)\right]_{+}^{-1/\xi}\right\rbrace,
+(\#eq:gev-distribution)
+\end{equation}
+defined on $\{z:(1+\xi(z-\mu)/\sigma>0)\}$, where $\mu\in\R$, $\sigma>0$ and $\xi\in\R$ are location, scale and shape parameters, respectively. The GEV family encompasses three sub-families of distributions which exhibit qualitatively different tail behaviours. These sub-families are determined by the shape parameter: $\xi>0$ gives the heavy-tailed Fréchet distribution, $\xi<0$ corresponds to the negative Weibull distribution with a finite upper limit, and $\xi=0$ (interpreted as the limit of \@ref(eq:gev-distribution) as $\xi\to 0$) corresponds to the exponential-tailed Gumbel distribution. Under the fundamental MDA assumption, there are two main strategies for modelling extremes: the block maxima method and the peaks-over-threshold method. 
+
+Models for block maxima are based on the representation \@ref(eq:gev-distribution). Given a series of independent observations $X_1,\ldots,X_n$, the data are divided into blocks of finite size $m$. It follows from the asymptotic theory that, for $m$ sufficiently large, the block maxima are approximately GEV distributed. 
+
+A limitation of the block maxima approach is that it may fail to utilise some large observations, even though they may be informative for the tail. This motivates the alternative but intimately related peaks-over-threshold method, which considers the distribution of excesses over a given high threshold. If $X$ is in the maximum domain of attraction of a $\mathrm{GEV}(\mu,\sigma,\xi)$ distribution, then 
+\begin{equation}
+\lim_{u\to\infty} \Prob{X>x+u \mid X>u} = 
+\left(1+\frac{\xi x}{\tilde{\sigma}}\right)_+^{-1/\xi}, 
+(\#eq:gpd-distribution)
+\end{equation}
+for $x>0$, where $\tilde{\sigma}=\sigma+\xi(u-\mu)$. The limiting conditional distribution is called the generalised Pareto distribution (GPD). Thus, for a sufficiently high fixed threshold $u$, exceedances by $X$ of $u$ are approximately GPD distributed. In practice, the threshold $u$ is chosen using graphical diagnostic tools [@colesIntroductionStatisticalModeling2001, Section 4.3.1] or test-based approaches [@wadsworthExploitingStructureMaximum2016; @wadsworthLikelihoodbasedProceduresThreshold2012].
+
+## Multivariate extreme value theory {#multivariate-evt}
+
+### Multivariate regular variation and the angular measure {#mv-reg-var-angular-measure}
+
+We will study multivariate extremes within the framework of multivariate regular variation. Informally, a random vector is regularly varying if it is jointly heavy-tailed, meaning its joint tail decays according to a power law. A rigorous treatment of regular variation involves notions of convergence of measures; for details see @resnickExtremeValuesRegular1987 and @resnickHeavytailPhenomenaProbabilistic2007. The regular variation framework is ubiquitous in multivariate extremes and in applications it is often assumed without validation, but a formal testing procedure has been developed [@einmahlTestingMultivariateRegular2020]. Although regular variation can be defined generally on $\R^d$, we restrict our attention to vectors on the non-negative orthant $\R^d_+=[0,\infty)^d$. This restriction implicitly assumes a directionality in the risk being assessed. Such directionality usually exists in applications. For example, an analysis of extreme rainfall is typically concerned with either heavy rainfall (flood risk) or scarce rainfall (drought risk), but not both. 
+
+The multivariate regular variation property implies that, for sufficiently large observations, the magnitude and direction of a random vector are approximately independent. Thus it is most simply described in terms of polar coordinates. Fix a norm $\norm{\cdot}$ and denote the unit sphere on the non-negative orthant by $\mathbb{S}_+^{d-1}=\{\bm{x}\in\R^d_+:\norm{\bm{x}}=1\}$. For any point $\bm{x}\in\R^d_+\setminus\{\bm{0}\}$, define the polar coordinate transformation $T(\bm{x})=(\norm{\bm{x}}, \bm{x}/\norm{\bm{x}})=:(r,\bm{w}).$ The radial component $r$ measures the distance of $\bm{x}$ from the origin and $\bm{w}\in\mathbb{S}_+^{d-1}$ is the associated angle. If a $d$-dimensional random vector $\bm{X}=(X_1,\ldots,X_d)^T\in\R^d_+$ is regularly varying with tail index $\alpha>0$, denoted $\bm{X}\in\mathrm{RV}^d_+(\alpha)$, then there exists a measure $H$ on $\mathbb{S}_+^{d-1}$ such that for any Borel set $\mathcal{B}\subset\mathbb{S}_+^{d-1}$ and $z>0$
+\begin{equation}
+\lim_{r\to\infty} \Prob{\left. \snorm{\bm{X}}>rz, \frac{\bm{X}}{\snorm{\bm{X}}}\in\mathcal{B} \, \right| \, \snorm{X}>r} = z^{-\alpha} H(\mathcal{B}).
+(\#eq:regularly-varying)
+\end{equation}
+
+At first glance, the requirement that $X_1,\ldots,X_d$ are heavy-tailed with a shared tail index may seem too restrictive to be useful. Indeed, this property is unlikely to be satisfied by the raw data, e.g.\ the GEV/GPD shape parameters of some components may be zero or negative, indicating light or finite tails. This issue is resolved by working with a transformed random vector obtained from the original random vector by performing suitable marginal transformations. Working with transformed marginals is common practice in extremes and can be theoretically justified [@resnickExtremeValuesRegular1987, p. 265]. A popular choice is Fréchet margins with shape parameter $\xi=\alpha$, that is $\Prob{X_i\leq x}=\exp(-x^{-\alpha})$ for $x>0$. This is achieved by transforming each $X_i$ to $[-\log F_i(X_i)]^{-1/\alpha}$, where $F_i$ is the marginal distribution function of $X_i$.
+
+It follows from \@ref(eq:regularly-varying) that the extremal behaviour of a $d$-dimensional random vector $\bm{X}$ is fully characterised by two quantities: the (known) tail index $\alpha$, which governs the heavy-tailedness, and the $(d-1)$-dimensional angular measure $H$, which contains all the information about the extremal dependence structure, i.e.\ the tail dependence between the components of $\bm{X}$. More details will be given in Section \@ref(extremal-dependence).
+
+The radial-angular decomposition in \@ref(eq:regularly-varying) suggests - and provides a rigorous theoretical basis for - a practical strategy for extrapolating observed data to unobserved extreme levels: the angular components associated with observations above a high radial threshold may be used to estimate $H$. Unfortunately, this becomes inherently challenging in high dimensions ($d\gg 1$): it requires estimating a high dimensional measure using only those few extreme observations that contain an informative signal for the distributional tail. Methods for overcoming this difficulty are the primary focus of this project and subsequent chapters of this report.
+
+### Extremal dependence and summary measures {#extremal-dependence}
+
+Extremal dependence is analogous to, but separate from, the notion of statistical dependence in non-extreme statistics. In particular, two random processes might appear independent in the standard sense but exhibit dependence in their extremes, e.g.\ daily price movements for two unrelated stocks that are susceptible to common shocks. In applications, the extremal dependence structure may be quite complex. For example, in a spatial analysis of climate extremes, it captures information such as the topography of the domain, the underlying physics of the climate system, and the distance between the spatial locations. 
+
+The concept of extremal dependence is formalised as follows. Define the tail correlation of $X_i$ and $X_j$ as
+\begin{equation}
+\chi_{ij} = \lim_{u\to 1}\chi_{ij}(u) = \lim_{u\to 1} \frac{\Prob{F_i(X_i)>u, F_j(X_j)>u}}{1-u}
+(\#eq:chi)
+\end{equation}
+where $F_i$ denotes the distribution function of $X_i$. The variables $X_i$ and $X_j$ are said to be asymptotically independent if $\chi_{ij}=0$ and asymptotically dependent if $\chi_{ij}>0$, with $\chi_{ij}=1$ corresponding to complete asymptotic dependence. In practice, the tail correlation is estimated by computing estimates $\hat{\chi}_{ij}(u)$ of $\chi_{ij}(u)$ for a range of quantiles $u$ and selecting one as an approximation to $\chi_{ij}$ [@engelkeSparseStructuresMultivariate2021, Figure 2]. For any non-empty $I\subset\{1,\ldots,d\}$, we can define $\chi_I$ by extending \@ref(eq:chi) in the natural way. The subsets $I$ with $\chi_I>0$ correspond to groups of components that can be large simultaneously (with non-negligible probability).
+
+The angular measure contains all information about the extremal dependence of $\bm{X}$. Asymptotic independence occurs if and only if $H$ is concentrated on $\bm{e}_1,\ldots,\bm{e}_d$, the vectors of the canonical basis of $\R^d$. It is important to note that asymptotic independence is a limiting case that cannot be attained in the multivariate regular variation paradigm. On the other hand, $\bm{X}$ exhibits complete asymptotic dependence if $H$ places a single point mass at $\gamma\bm{1}\in\mathbb{S}_+^{d-1}$ for some normalising constant $\gamma>0$ that depends on the choice of norm. Between these two degenerate cases, the angular measure (and corresponding dependence structure) can be very complicated. This motivates the use of simple summary measures.  
+
+The quantity $\chi$ defined in \@ref(eq:chi) is a popular summary measure for assessing the strength of tail dependence. A limitation is that it fails to discriminate between asymptotically independent distributions; a complementary measure $\bar{\chi}$ addresses this deficiency [@colesIntroductionStatisticalModeling2001, Section 8.4]. The set of tail coefficients $\{\chi_{ij}:i,j=1,\ldots,d\}$ can be expressed in terms of $H$, but provides an incomplete description of the dependence structure of $\bm{X}$. In particular, $\chi$ only measures the strength of pairwise dependencies.
+
+An alternative summary measure is the extremal dependence measure (EDM), defined in the bivariate case by @larssonExtremalDependenceMeasure2012. For a regularly varying random vector $\bm{X}$ with angular measure $H$ on $\mathbb{S}_+^{d-1}$, the EDM between $X_i$ and $X_j$ is given by
+\begin{equation}
+\mathrm{EDM}(X_i,X_j) = \int_{\mathbb{S}_+^{d-1}} w_i w_j \,\dee H(\bm{w}).
+(\#eq:edm)
+\end{equation}
+It is easy to see that $\mathrm{EDM}(X_i,X_j)=0$ in the case of asymptotic independence and that $\mathrm{EDM}(X_i,X_j)$ attains its maximum in the case of complete asymptotic dependence. Again, the set $\{\mathrm{EDM}(X_i,X_j):i,j=1,\ldots,d\}$ is fully determined by the angular measure, but only contains summary information about the pairwise dependencies. 
+
+### Classical models
+
+The family of possible extremal dependence structures is in one-to-one correspondence with the class of angular measures, i.e.\ the class of positive measures on the unit simplex satisfying a number of mean constraints [@beirlantStatisticsExtremesTheory2004, Section 8.2.3]. Unfortunately, this class is very large and does not admit a finite-dimensional parametrisation. A popular approach is to perform inference within a well-chosen parametric sub-model, constructed in such a way that such that the parametric sub-family generates a wide class of (valid) dependence structures. However, the trade-off between model flexibility and model parsimony is difficult to manage. The logistic model, proposed initially in the bivariate setting by @gumbelBivariateExponentialDistributions1960, has only one parameter and is symmetric in all components. This is too restrictive to capture the complex dependence structure encountered in many applications. An asymmetric extension of the logistic model, developed by @tawnBivariateExtremeValue1988, is more flexible but at the expense of the dependence structure being defined by $2^d$ parameters. The Hüsler-Reiss (HR) distribution [@huslerMaximaNormalRandom1989] is parametrised by a conditionally negative definite matrix $\Gamma\in\R^{d\times d}$, called the variogram, whose entries $\Gamma_{ij}$ control the strength of extremal dependence between pairs of components of $\bm{X}$. However, the number of parameters is $d(d+1)/2$, which grows quickly as $d$ increases. A more comprehensive overview of parametric models for multivariate extremes can be found in @gudendorfExtremeValueCopulas2010. Generally, these models are ill-suited to high dimensions because they are either too inflexible or the number of parameters increases too rapidly. The curse of dimensionality results in a lack of parsimony and impedes inference. The latter issue is exacerbated by the fact that we have only a limited number of extreme observations at our disposal. Parsimonious models have been developed specifically for spatial applications, but they require prior domain knowledge and stationarity assumptions [@wackernagelMultivariateGeostatisticsIntroduction1995]. This is too restrictive and precludes a purely data-driven approach. 
+
+More recently, semi-parametric models have been explored. @boldiMixtureModelMultivariate2007 propose a constrained mixture of Dirichlet distributions, where the number of mixture components $k$ is allowed to vary. The number of parameters is of order $kd$. @hansonBernsteinPolynomialAngular2017 generalise the model to allow $H$-mass to be placed at the boundaries of $\mathbb{S}_+^{d-1}$, and another extension by @decarvalhoSpectralDensityRatio2014 permits a mixture of different spectral distributions (not just Dirichlet). The drawbacks of these approaches are primarily practical in nature: model fitting is typically performed using a reversible jump MCMC (RJMCMC) algorithm that is cumbersome to implement and the computations become infeasible for large $k$.   
+
+The limitations of these classical models motivate research into alternative approaches using techniques from statistical learning. These will be reviewed in next chapter.
+
+
+
+

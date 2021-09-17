@@ -1,0 +1,20 @@
+# bookdown will search for any .Rmd files in the root directory AND any subdirectories specified here
+# ordering of the .Rmd files is alphabetical
+# .Rmd files with an underscore before their name will be taken as 'pre-body' content
+rmd_subdir: ["front-and-back-matter"]
+
+# alternatively, you can list the .Rmd files you want (and their ordering)
+#rmd_files: ["index.Rmd", "chapters/01-rmd-basics-markdown.Rmd",  ... , "front-and-back-matter/98-appendices.Rmd", "front-and-back-matter/99-references.Rmd"]
+  
+# specifiy a directory for the output files (docs is a good choice for compatibility with GitHub Pages)
+output_dir: "docs"
+
+# run scripts before and/or after each chapter (e.g. clear environments)
+before_chapter_script: "scripts_and_filters/before_chapter.R"
+after_chapter_script: "scripts_and_filters/after_chapter.R"
+
+# provide a link for readers to suggest/submit changes to the source .Rmd files
+edit: https://github.com/pawleymatthew/bathdown/tree/master/%s
+
+# if true, then you don't have to manually delete the merged _main.Rmd file if something goes wrong when you try to build
+delete_merged_file: true

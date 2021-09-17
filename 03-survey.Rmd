@@ -1,0 +1,170 @@
+# Literature review: extremal dependence in high dimensions {#survey}
+\chaptermark{Literature review}
+\minitoc
+
+\noindent 
+
+## Introduction
+
+The tail dependence of a $d$-dimensional random vector is characterised by a $(d-1)$-dimensional angular measure, whose estimation is challenging, especially in high dimensions. This difficulty has given rise to a new area of research concerning statistical learning methods for analysing extremal dependence. In some cases, these approaches are limited to a low or moderate number of dimensions [@goixSparseRepresentationMultivariate2017; @simpsonDeterminingDependenceStructure2019; @meyerSparseRegularVariation2021]. A more promising line of research focusses on adapting popular unsupervised learning techniques, such as clustering and principal component analysis (PCA), for extremes [@bernardClusteringMaximaSpatial2013; @chautruDimensionReductionMultivariate2015; @cooleyDecompositionsDependenceHighdimensional2019; @dreesPrincipalComponentAnalysis2021; @fomichovDetectionGroupsConcomitant2020; @janssenKmeansClusteringExtremes2020; @rohrbeckSimulatingFloodEvent2021]. If the angular measure has a sparse structure, then such methods can facilitate dimension reduction. 
+
+### Notions of sparsity
+
+Clustering and principal components analysis are popular tools in multivariate statistics used to detect low-dimensional structures in data [@jamesIntroductionStatisticalLearning2021]. Their application implicitly assumes a notion of sparsity, so that the object of interest can be expressed as (or at least well-approximated by) a lower-dimensional object. PCA assumes that certain linear combinations of the variables tend to be more likely than others, so that the data can be projected onto a lower-dimensional subspace while incurring minimal information loss. Clustering assumes that the observations can be partitioned into distinct, homogeneous subgroups. Thus, in order to adapt/apply these techniques to the analysis of multivariate tails, we require that the angular measure exhibits some sparse structure. Specifically, we assume that the dimension of the support of the angular measure $H$ is much less than $d$. In many applications, only a small number ($\ll 2^d-1$) of subsets of components are likely to be simultaneously large, so this assumption is usually reasonable. For example, heavy rainfall events tend to be localised so that only groups of neighbouring sites are jointly impacted. Notions of sparsity are discussed in more detail in @engelkeSparseStructuresMultivariate2021. 
+
+### Data simulation
+
+Some of the methods in this chapter will be illustrated using synthetic data generated from a $d$-variate max-stable Hüsler-Reiss (HR) distribution. Full details of the simulation framework and methodology are given in Appendix \@ref(sim-hr). We generate $n=5000$ samples in $d=75$ dimensions with $\beta=2$. The dependence structure is constructed so that the angular measure is supported on fives faces of $\mathbb{S}_+^{d-1}$, whose dimensions are 20, 20, 20, 10 and 5. Components belonging to different groups are asymptotically independent. Components belonging to the same group exhibit asymptotic dependence with varying strengths. Figure \@ref(fig:simHR-exploratory-Chi) shows the entries of the matrix of tail correlation coefficients $\chi_{ij}$. The darker coloured cells corresponds to pairs of components with strong extremal dependence. The zero entries in the off-diagonal blocks is due to asymptotic independence between components in different subgroups. Figure \@ref(fig:simHR-exploratory-3dscatters) shows some exploratory plots, produced by projecting the sample angles of large observations onto various faces of the unit sphere $\mathbb{S}_+^{2}=\{\bm{x}\in\R^3_+:\snorm{\bm{x}}_2=1\}$. In the left plot, all components are dependent, so we observe a number of points in the middle of the interior of the simplex. In the middle plot, only two of the components are asymptotically dependent. Extremes in $X_1,$ and $X_2$ are dependent and therefore likely to co-occur, but they are independent of extremes $X_{21}$. As a result, the points are concentrated along the bottom edge and upper corner. In the third plot, all components are asymptotically independent and extremes tend to occur individually. 
+
+```{r simHR-example}
+simHR <- rHRclusters(n = 5000, d = c(20,20,20,10,5), beta = 2)
+```
+
+```{r simHR-exploratory-Chi, fig.align='center', fig.cap="The matrix of true pairwise tail correlation coefficients $\\chi_{ij}$ for the simulated data.", fig.path='figures/', fig.scap="True pairwise tail correlation coefficients for the simulated data.", dev='pdf', out.width="60%"}
+levelplotmatrix(simHR$Chi, xlab = "i", ylab = "j")
+```
+
+```{r simHR-exploratory-3dscatters, fig.cap="Projections of the sample angles corresponding to largest 5\\% of the simulated observations onto various faces of $\\mathbb{S}_+^{2}$.", fig.path='figures/', fig.scap="Projected sample angles for the simulated data.", dev='pdf', out.width="100%"}
+par(mfrow=c(1,3), mar=c(5, 0.2, 4, 0.2))
+plot3Dangles(X = simHR$X, dims = c(1,2,3))
+plot3Dangles(X = simHR$X, dims = c(1,2,21))
+plot3Dangles(X = simHR$X, dims = c(1,21,41))
+```
+
+## Clustering {#clustering}
+
+Clustering refers to the task of partitioning a set of objects into distinct, homogeneous subgroups, called clusters [@jamesIntroductionStatisticalLearning2021]. Clustering is an unsupervised learning problem: the goal is to discover structure from a set of observations. Fundamental to any clustering method is the notion of (dis)similarity: to speak of homogeneous subgroups and heterogeneous observations we must define what it means for two objects to be similar/different. This is a domain-specific consideration. Techniques for cluster analysis in a non-extreme setting, such as $k$-means and hierarchical clustering, are well established and have been applied in many fields. Recent work adapts these methods for extremes to facilitate exploration of the extremal dependence structure. 
+
+### Clustering based on pairwise extremal dependence measures
+
+The first class of methods clusters components of $\bm{X}$ according to some dissimilarity defined in terms of a measure of pairwise extremal dependence. This approach was initially proposed by @bernardClusteringMaximaSpatial2013. Given a sample $\bm{X}_1,\ldots,\bm{X}_n$, they define the pairwise dissimilarity between components $X_i$ and $X_j$ as
+\begin{equation}
+d_{ij} = \frac{1-\chi_{ij}}{2(3-\chi_{ij})}
+(\#eq:f-madogram-distance)
+\end{equation}
+where $\chi_{ij}$ is the tail correlation coefficient defined in Section \@ref(extremal-dependence). This defines an interpretable distance, termed the F-madogram distance, ranging from $d_{ij}=0$ in the case of complete asymptotic dependence to $d_{ij}=1/6$ for asymptotic independence. The dissimilarity matrix $D=(d_{ij})$ can be estimated non-parametrically, and clustering is performed using the partitioning-around-medoids (PAM) algorithm of @kaufmanFindingGroupsData1990, which is closely related to $k$-means. The output is a set of $K\geq 2$ clusters such that tail dependence is stronger within groups than between groups. This method is very versatile: the dissimilarity measure in \@ref(eq:f-madogram-distance) can be tailored according to the particularities and aims of the study [@badorFutureSummerMegaheatwave2017; @brackenSpatialVariabilitySeasonal2015; @mornetWindStormRisk2017; @saundersRegionalisationApproachRainfall2020; @vignottoClusteringBivariateDependencies2021]. A limitation is that the number of clusters, $K$, is a hyperparameter that needs to be tuned. This is typically done by performing a silhouette analysis. The average silhouette coefficient, $\bar{s}(K)$, quantifies how informative a clustering is by comparing the intra- and inter-cluster distances [@rousseeuwSilhouettesGraphicalAid1987]. The number of clusters can be chosen by comparing $\bar{s}(K)$ for a range of $K$ values, as illustrated in Figure \@ref(fig:simHR-pam-silwidths) for the simulated data. The plot indicates that there are five clusters, because $\bar{s}(K)$ is maximal at $K=5$. This is in accordance with the known true dependence structure. However, the diagnostic is unlikely to be so conclusive in applications where the dependence structure is more complicated [see @bernardClusteringMaximaSpatial2013].
+
+```{r simHR-pam-silwidths, fig.cap="Silhouette analysis of the PAM clusters (based on F-madogram distances) for the simulated data. The average silhouette coefficient is maximised at $K=5$.", fig.path='figures/', fig.scap="Silhouette analysis of PAM clusters for the simulated data.", dev='pdf', out.width="70%", fig.align='center'}
+Kvals <- 2:12
+silvals <- rep(NA, length(Kvals))
+for (i in seq_along(Kvals)){
+  clusterK <- PAMcluster(X = simHR$X, K = Kvals[i])
+  silvals[i] <- clusterK$silinfo["avg.width"]
+}
+plot(x = Kvals, y = silvals, type = "l", lty = 1, 
+     xlab = bquote("Number of clusters," ~ K),
+     ylab = bquote("Average silhouette coefficient," ~ bar(s)(K)))
+```
+
+### Bayesian hierarchical clustering
+
+Another class of methods is based on hierarchical models, which are a natural approach for modelling spatial processes. Under this approach, the data is grouped into clusters at one or more levels. In a Bayesian hierarchical model, the number of groups, the cluster allocations, and the parameters for each cluster can be updated using Bayes' theorem. More details about hierarchical models can be found in @schervishTheoryStatistics1995. 
+
+In the context of clustering for spatial extremes, several methods have been proposed. @carreauPartitioningHazardSubregions2017 propose a peaks-over-threshold model in which the GPD shape parameter is constant within clusters. The clustering facilitates information pooled across sites, reducing uncertainty in the estimation of $\xi$. However, their model gives no consideration to extremal dependence. @reichSpatialMarkovModel2019 allocate sites to $K$ clusters using a spatial Potts model. The strength of spatial dependence over various scales is controlled by several parameters: $K$ controls the limiting long-range dependence; the Potts parameter controls the rate of decay of dependence as a function of distance; a further parameter $\alpha$ controls the strength of dependence within the clusters. Neither @carreauPartitioningHazardSubregions2017 nor @reichSpatialMarkovModel2019 have a mechanism to update the number of clusters $K$, it must be chosen in advance. This deficiency is addressed by @rohrbeckBayesianSpatialClustering2020. Given a number of clusters and a particular partition, their model is parametrised so that sites belonging to the same cluster have stronger extremal dependence, on average, and spatial dependence decays exponentially with distance, with a common rate of decay between clusters and a varying rate within clusters. The parameters, including $K$ are updated by an RJMCMC algorithm. 
+
+### Spherical clustering of extremal angles
+
+@chautruDimensionReductionMultivariate2015 propose exploring the angular measure by performing spherical clustering of the sample angles. Given sample data $\bm{X}_1,\ldots,\bm{X}_{n}\in\R^d$, let $\bm{w}_1,\ldots,\bm{w}_{n_{\text{exc}}}\in\mathbb{S}_+^{d-1}$ denote the set of angles (based on the Euclidean norm $\snorm{\cdot}_2$) associated with the $n_{\text{exc}}$ observations above a given high radial threshold. The idea is to solve the optimisation problem
+\begin{equation}
+\min_{\bm{c}_1,\ldots,\bm{c}_K\in\mathbb{S}_+^{d-1}} \sum_{i=1}^{n_{\text{exc}}} \min_{j=1,\ldots,K} d(\bm{w}_i,\bm{c}_j),
+(\#eq:clustering-optimisation)
+\end{equation}
+where $K$ is a hyperparameter, $\bm{c}_1,\ldots,\bm{c}_K$ are the cluster centres (centroids), and $d:\mathbb{S}_+^{d-1}\times\mathbb{S}_+^{d-1}\to[0,\infty)$  measures the dissimilarity between two points on the unit sphere. @janssenKmeansClusteringExtremes2020 take
+\begin{equation}
+d(\bm{u},\bm{v})=d_p(\bm{u},\bm{v}):=1-(\bm{u}^T\bm{v})^p,\qquad (\bm{u},\bm{v}\in\mathbb{S}_+^{d-1}),
+(\#eq:clustering-dp)
+\end{equation}
+with $p=1$ and employ the spherical $k$-means clustering algorithm of @dhillonConceptDecompositionsLarge2001 to locate the cluster centres. The case $p=2$ is considered by @fomichovDetectionGroupsConcomitant2020. Theoretical results and numerical experiments indicate that choosing $p=2$ yields better results, especially when pairwise extremal dependence within clusters tends to be weak. Moreover, there are interesting links between spherical clustering with $d_2$ dissimilarity and extremal principal components analysis (the topic of the following section). For this reason, they refer to this special case of the general method as spherical $k$-principal-components clustering.
+
+The centroids can be interpreted as the angular components of prototypical extreme events. A popular strategy for estimating the support of the angular measure is to assign positive $H$-mass to a face of the unit sphere if a centroid lies within a certain neighbourhood of that face [@chiapinoFeatureClusteringExtreme2017; @goixSparseRepresentationMultivariate2017; @simpsonDeterminingDependenceStructure2019; @chiapinoIdentifyingGroupsVariables2018; @meyerSparseRegularVariation2021]. Then the angular measure can be modelled by combining sub-models on each of these faces in a mixture model. However, these methods tend to be limited to moderate dimensions and they involve thresholding procedures that are highly sensitive to the choice of threshold. Figure \@ref(fig:simHR-skmeans) is a visual representation of the entries of the centroids obtained by applying the methodology of @janssenKmeansClusteringExtremes2020 with $K=5$ to the simulated data. On the whole, the centroids reflect the true dependence structure. However, the 74th component of $\bm{X}$ appears to be erroneously allocated to the first cluster; this is caused by the weak dependence between $X_{74}$ and the other components in its 'true' subgroup (see Figure \@ref(fig:simHR-exploratory-Chi)). 
+
+```{r simHR-skmeans, fig.cap="Representations of the cluster centroids obtained by applying spherical $k$-means clustering (with $d_1$ dissimilarity and $K=5$) to the simulated data. The colours of the cells represent the size of the corresponding entry in the vector $\\bm{c}_j$. Clustering is based on the sample angles corresponding to observations for which $r_i=\\snorm{\\bm{x}_i}_2$ exceeds the 95\\% quantile of $\\{r_i:i=1,\\ldots,n\\}$.", fig.path='figures/', fig.scap="Spherical $k$-means cluster centroids for the simulated data.", dev='pdf', out.width="100%"}
+r <- sqrt(rowSums(simHR$X^2))
+rstar <- quantile(r, u = 0.95, na.rm = TRUE)
+bigr <- which(r > rstar)
+skmeansX <- simHR$X[bigr,]/r[bigr]
+clusterSkmeans <- skmeans(skmeansX, k=5)
+p <- levelplotmatrix(t(clusterSkmeans$prototypes), 
+                     xlab = bquote("Entries of cluster centroid," ~ bold(c)[j]), 
+                     ylab = bquote("Cluster," ~ j))
+update(p, aspect=0.5)
+```
+
+## Principal components analysis
+
+In the context of unsupervised learning, principal components analysis (PCA) refers to finding a low-dimensional linear subspace such that the data projected onto the subspace is as close as possible to the original data [@jamesIntroductionStatisticalLearning2021]. In extremes, the goal is to find a low-dimensional subspace on which $H$ is concentrated. @haugDimensionReductionBased2009 were the first to do this, but they assume a specific parametric form for the extremal dependence structure. @dreesPrincipalComponentAnalysis2021 and @cooleyDecompositionsDependenceHighdimensional2019 propose alternative statistical learning approaches that make no parametric assumption, in contrast. 
+
+### PCA for the extremal angles {#pca-angles}
+
+@dreesPrincipalComponentAnalysis2021 consider the angles $\bm{W}=\bm{X}/\snorm{\bm{X}}$ and follow the standard PCA approach by projecting $\bm{W}$ onto low-dimensional linear subspaces $V\subset\R^d$. The optimal subspace is that which minimises the conditional risk
+\begin{equation*}
+R_t(V) = \mathbb{E}\left[\left.\norm{\Pi_V\bm{W} - \bm{W}}_2^2 \right| \snorm{\bm{X}}>t\right],
+\end{equation*}
+for some high threshold $t$, where $\Pi_V\bm{W}$ denotes the orthogonal projection of $\bm{W}$ onto $V$. The risk measures the reconstruction error incurred by reverting to a lower dimensional space. While the projection $\Pi_V\bm{W}$ does not necessarily lie on $\mathbb{S}_+^{d-1}$, this can be remedied by rescaling/shifting appropriately. In practice, given sample angles $\{\bm{w}_i=\bm{x}_i/\snorm{\bm{x}_i}\}_{i=1}^n$ the optimal subspace is estimated by considering the empirical risk
+\begin{equation}
+\hat{R}_t(V) = \frac{\sum_{i=1}^n \norm{\Pi_V\bm{w}_i - \bm{w}_i}^2\mathbbm{1}(\norm{\bm{x}_i}>t)}{\sum_{i=1}^n \mathbbm{1}(\norm{\bm{x}_i}>t)}.
+(\#eq:empirical-risk)
+\end{equation}
+As in standard PCA, there is a trade-off between reconstruction error and dimension reduction, because a high-dimensional subspace will yield better reconstructions than a lower-dimensional subspace. The number of dimensions is selected by comparing $R_t(\hat{V}_p)$ for a range of values $p\geq 1$, where $\hat{V}_p$ denotes the minimiser of $\hat{R}$ in the set of $p$-dimensional linear subspaces. The minimisers $\{\hat{V}_p:p\geq 1\}$ can be derived via a spectral analysis of the matrix of second mixed moments of $\bm{W}$. In high-dimensional simulation studies, @dreesPrincipalComponentAnalysis2021 find that employing PCA on $\bm{W}$ does improve estimation of the angular measure (compared against a standard non-parametric estimator of $H$) but there are difficulties with choosing the number of dimensions.
+
+### PCA based on the tail pairwise dependence matrix {#pca-tpdm}
+
+Roughly speaking, the theory of multivariate regular variation presented in Section \@ref(mv-reg-var-angular-measure) implies that performing PCA for $\bm{W}$ is essentially equivalent to performing PCA for $\bm{X}$ conditional on $\snorm{\bm{X}}>t$ (up to some rescaling and assuming standardised marginals) in the limit as $t\to\infty$. The latter interpretation underlies the approach originally developed by @cooleyDecompositionsDependenceHighdimensional2019 and later applied by @rohrbeckSimulatingFloodEvent2021 to generate synthetic extreme events. The remainder of this report comprises a critical review of their methodologies: this section presents theoretical details; Chapter \@ref(application-fr-rain) illustrates their application; Chapter \@ref(future-work) discusses limitations and directions for future work.  
+Suppose $\tilde{\bm{X}}\in\mathrm{RV}^d_+(2)$ is a random vector with Fréchet margins with shape $\xi=2$, perhaps obtained by performing marginal transformations to the original random vector of interest $\bm{X}$. Let $H_X$ denote the angular measure of $\tilde{\bm{X}}$ on the $L_2$ unit sphere $\mathbb{S}_+^{d-1}=\{\bm{x}\in\R^d_+:\norm{\bm{x}}_2=1\}$. The tail dependence of $\tilde{\bm{X}}$ may be summarised by the $d\times d$ matrix $\Sigma=(\Sigma_{ij})$ given by
+\begin{equation}
+\Sigma_{ij} = \int_{\mathbb{S}_+^{d-1}} w_i w_j \,\dee H_X(\bm{w}).
+(\#eq:tpdm)
+\end{equation}
+The matrix $\Sigma$ is called the tail pairwise dependence matrix (TPDM). It has been used to devise a suite of methods for analysing extremal dependence in various settings [@fixSimultaneousAutoregressiveModels2021; @mhatreTransformedLinearModelsTime2021]. The right-hand side of \@ref(eq:tpdm) is precisely the EDM from Section \@ref(extremal-dependence); the interpretation of the entries of $\Sigma$ in terms of extremal dependence follows immediately. The choice of tail index $\alpha=2$ endows the TPDM with properties analogous to that of the covariance matrix. In particular [@cooleyDecompositionsDependenceHighdimensional2019, Section 4]: 
+\begin{enumerate}
+\item $\Sigma$ is non-negative definite.
+\item The diagonal elements $\Sigma_{ii}$ relate to the scale of the components of $\tilde{\bm{X}}$. Specifically, for any $x>0$,
+\begin{equation*}
+\lim_{n\to\infty} n\Prob{\frac{\tilde{X}_i}{\sqrt{n}}>x} = \frac{\Sigma_{ii}}{x^2}.
+\end{equation*}
+\item The sum of the diagonal elements of $\Sigma$ equals the total mass of $H_X$. 
+\item Two components $\tilde{X}_i$ and $\tilde{X}_j$ are asymptotically independent if and only if $\Sigma_{ij}=0$.
+\end{enumerate}
+Following the approach of standard PCA, we consider the eigendecomposition $\Sigma=UDU^T$, where $D$ is a diagonal matrix of real eigenvalues $\lambda_1\geq\lambda_2\geq\ldots\geq\lambda_d\geq 0$ and $U\in\R^{d\times d}$ is a unitary matrix whose columns are the corresponding eigenvectors $\bm{u}_1,\ldots,\bm{u}_d$. Let $\tau:\R\to[0,\infty)$ denote the softplus function defined by $\tau(x)=\log(1+\exp(x))$ for $x\in\R$. This function allows us to map between $\R^d$ and $\R_+^d$ without interfering with the tails. Applying the transform component-wise, the vectors $\tau(\bm{u}_1),\ldots,\tau(\bm{u}_d)$ form an orthonormal basis for $\R_+^d$. Moreover, the basis is ordered such that each vector corresponds to the direction of maximum scale after accounting for the information contained in the previous basis vectors. The eigenvalues measure the amount of scale explained by these directions. 
+
+The extremal principal components of $\tilde{\bm{X}}$ are defined by
+\begin{equation}
+\bm{V} = \bm{U}^T\tau^{-1}(\tilde{\bm{X}}).
+(\#eq:extremal-principal-components)
+\end{equation}
+Unlike $\tilde{\bm{X}}$, the extremal principal components lie in the entire space $\R^d$. By reversing \@ref(eq:extremal-principal-components), it can be shown that
+\begin{equation}
+\tilde{\bm{X}} = \tau\left(\sum_{i=1}^d V_{i}\bm{u}_i\right).
+(\#eq:pca-reconstruction)
+\end{equation} 
+Truncating the sum in \@ref(eq:pca-reconstruction) yields the optimal (in terms of $L_2$-distance) low-dimensional projections of $\tilde{\bm{X}}$ [@engelkeSparseStructuresMultivariate2021].
+
+The random variable $\bm{V}$ is multivariate regularly varying with tail index $\alpha=2$ [@cooleyDecompositionsDependenceHighdimensional2019, Lemma A4]. Furthermore, the random variable $\snorm{\bm{V}}_2$ follows a Fréchet distribution with $\Prob{\snorm{\bm{V}}_2\leq t}=\exp[-(t/d)^{-2}]$ for $t>0$, due to the norm preservation property of the unitary matrix $U$ used in the projection in \@ref(eq:extremal-principal-components). Let $H_V$, defined on the entire unit sphere $\mathbb{S}^{d-1}=\{\bm{x}\in\R^d:\norm{\bm{x}}_2=1\}$, denote the angular measure of $\bm{V}$, and define the TPDM $\tilde{\Sigma}$ of $\bm{V}$ in the natural way, i.e.\ by replacing $H_X$ with $H_V$ in \@ref(eq:tpdm). By Proposition 6 in @cooleyDecompositionsDependenceHighdimensional2019, we have $\tilde{\Sigma}_{ii}=\lambda_i$ for $i=1,\ldots,d$ and $\tilde{\Sigma}_{ij}=0$ for $i\neq j$. Unfortunately, now $\tilde{\Sigma}_{ij}=0$ does not imply asymptotic independence between $V_i$ and $V_j$. 
+
+@rohrbeckSimulatingFloodEvent2021 show how this framework can be exploited to generate samples from the tail of $\tilde{\bm{X}}$ (and ultimately $\bm{X}$, by applying the inverse of the initial marginal transformations). The key idea is to sample from the tail distribution of $\bm{V}$ instead of directly sampling from the tail of $\tilde{\bm{X}}$, which would require estimating $H_X$. Unfortunately, since the extremal principal components are asymptotically dependent, sampling from the tail distribution of $\bm{V}$ still requires the estimation of the $(d-1)$-dimensional measure $H_V$. However, the crucial difference is that the components of $\bm{V}$ are ordered so that its first few components contain the most information about the structure of extreme events. In particular, for some high threshold $r_V$, the distribution of
+\begin{equation*}
+\bm{W} = \left. \frac{\bm{V}}{\snorm{\bm{V}}_2} \, \right| \, \snorm{\bm{V}}_2>r_V
+\end{equation*}
+is estimated by combining a flexible model for the dependence structure of $(W_1,\ldots,W_m)$ and a restrictive model for the dependence structure of $(W_{m+1},\ldots,W_d)$. The value $1\leq m\leq d$ is selected according to the number of eigenpairs needed to capture the large-scale extremal behaviour of $\tilde{\bm{X}}$. Provided the angular measure of $\tilde{\bm{X}}$ exhibits a sparse structure, $m\ll d$ should be sufficient, so we reap the benefits of dimension reduction. Asymptotic dependence between the principal components dictates that, for a realistic model, the large-scale behaviour $(W_1,\ldots,W_m)$ and localised dynamics $(W_{m+1},\ldots,W_d)$ must be modelled jointly. 
+
+The first step is to estimate the distribution of a lower-dimensional random vector $\bm{Z}\in\mathbb{S}^{m+1}$ defined by $Z_i=W_i$ for $i=1,\ldots,m$ and 
+\begin{equation*}
+Z_{m+1} = 
+\begin{cases}
+\sqrt{1-\sum_{i=1}^m W_i^2}, & \text{if } W_{m+1}\geq 0 \\
+-\sqrt{1-\sum_{i=1}^m W_i^2}, & \text{if } W_{m+1}< 0
+\end{cases}.
+\end{equation*}
+The first $m$ components of $\bm{Z}$ describe the large-scale dependence structure, while the final component $Z_{m+1}$ summarises local dynamics. The distribution of $\bm{Z}$ is then modelled by a suitable kernel density estimate for spherical data. @rohrbeckSimulatingFloodEvent2021 choose a mixture of Mises-Fisher distributions [@hallKernelDensityEstimation1986]: given observations $\{\bm{z}_i:i=1,\ldots,n_{\text{exc}}\}$ the estimated density is given by
+\begin{equation*}
+\hat{h}(\bm{z})=\frac{C(\kappa)}{n_{\text{exc}}} \sum_{i=1}^{n_{\text{exc}}}\exp(\kappa\bm{z}^T\bm{z}_i),
+\end{equation*}
+for $\bm{z}\in\mathbb{S}^{m+1}$, where $\kappa>0$ is the bandwidth of the kernels and $C(\kappa)$ is a normalising constant.
+
+Given a sample $\bm{z}\in\mathbb{S}^{m+1}$ from the fitted distribution for $\bm{Z}$, a sample $\bm{w}\in\mathbb{S}^{d-1}$ is derived by a nearest neighbours approach, by setting
+\begin{equation*}
+\bm{w} = \left(z_1,\ldots,z_m,\abs{\frac{z_{m+1}}{z_{m+1}^\star}}w_{m+1},\ldots,\abs{\frac{z_{m+1}}{z_{m+1}^\star}}w_{d}\right),
+\end{equation*}
+where $\bm{z}^\star$ is the nearest neighbour of $\bm{z}$ amongst $\{\bm{z}_i:i=1,\ldots,n_{\text{exc}}\}$. The simulated principal components $\bm{v}\in\R^d$ are given by $\bm{v}=r\bm{w}$, where $r=\snorm{\bm{V}}_2$ is sampled from a Fréchet distribution with $\Prob{\snorm{\bm{V}}_2\leq t}=\exp[-(t/d)^{-2}]$. Finally, a sample $\tilde{\bm{x}}\in\R_+^d$ from the approximate tail distribution of $\tilde{\bm{x}}$ is obtained by applying the inverse of \@ref(eq:extremal-principal-components) to $\bm{v}$.
+
+The next chapter will illustrate how these methods are applied and provide more practical details regarding their implementation. 

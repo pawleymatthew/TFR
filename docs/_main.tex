@@ -1,0 +1,755 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BATH REPORT TEMPLATE
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Structure of this template:
+%     
+%   1. Page layout - documentclass, geometry, spacing, headers and footers, chapter headings
+%   2. Tables
+%   3. 
+%   3. Bibliography setup
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Metadata is taken from the YAML in index.Rmd
+% Also refers to the bathreport.cls file
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PAGE LAYOUT
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[en-GB, a4paper, nobind]{templates/bathreport}
+
+% fix to include code in shaded environments
+
+% soul package for correction highlighting
+\definecolor{correctioncolor}{HTML}{CCCCFF}
+\sethlcolor{correctioncolor}
+\newcommand{\ctext}[3][RGB]{%
+  \begingroup
+  \definecolor{hlcolor}{#1}{#2}\sethlcolor{hlcolor}%
+  \hl{#3}%
+  \endgroup
+}
+\soulregister\ref7
+\soulregister\cite7
+\soulregister\autocite7
+\soulregister\textcite7
+\soulregister\pageref7
+
+%%%%%%% PAGE HEADERS AND FOOTERS %%%%%%%%%
+\fancyhead[LO]{\leftmark} 
+\fancyhead[RE]{\rightmark} 
+
+% page number positioning
+\fancyfoot[C]{\thepage} %regular pages
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}} %chapter pages
+
+% fix header on cleared pages for openright
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+   \hbox{}
+   \fancyfoot[C]{}
+   \newpage
+   \if@twocolumn\hbox{}\newpage
+   \fi
+   \fancyhead[LO]{\leftmark} 
+   \fancyhead[RE]{\rightmark} 
+   \fi\fi}
+
+% add footer "DRAFT: Date Time" to every page (apart from chapter heading pages)
+
+% highlight (using colour defined by hlcolor) corrections, e.g. sending a PDF with corrections to supervisor/examiner
+% use \mccorrect{...} to highlight short bits, or \begin{mccorrection} ... \end{mccorrection} for long bits
+\correctionstrue
+
+%%%%% BIBLIOGRAPHY SETUP
+
+% Setup the style of the bibliography (style chosen in bib-authoryear in index.Rmd YAML)
+% Option 1: author-year in-text citation with an alphabetical works cited.
+% Option 2: numeric in-text citation with references in order of appearance.
+\usepackage[style=authoryear, sorting=nyt, backend=biber, maxcitenames=2, useprefix, doi=true, isbn=false, uniquename=false]{biblatex}
+\newcommand*{\bibtitle}{Bibliography}
+
+\addbibresource{references.bib}
+
+% left-aligned (to change font size, put, e.g. \small, after \raggedright)
+\renewcommand*{\bibfont}{\raggedright}
+% increase spacing between entries
+\setlength\bibitemsep{1.75\itemsep}
+
+
+%%%%% EQUATION NUMBERING
+% Uncomment this if you want equation numbers per section (2.3.12), instead of per chapter (2.18):
+%\numberwithin{equation}{subsection}
+
+
+%%%%% THESIS / TITLE PAGE INFORMATION
+% basic information
+\title{Statistical learning methods for dimension reduction in multivariate extremes}
+\author{Matthew Pawley}
+\department{Department of Mathematical Sciences}
+\course{Thesis Formulation Report}
+\supervisor{Dr Christian Rohrbeck and Dr Evangelos Evangelou}
+\date{September 2021}
+
+%%%%% PERSONAL LATEX MACROS
+\input{templates/commands}
+
+%%%%% THE ACTUAL DOCUMENT STARTS HERE
+\begin{document}
+
+%%%%% CHOOSE LINE SPACING
+%\setlength{\textbaselineskip}{22pt plus2pt}
+\setlength{\textbaselineskip}{18pt plus2pt minus1pt}
+
+% spacing for the roman-numbered pages (acknowledgements, table of contents, etc.)
+\setlength{\frontmatterbaselineskip}{17pt plus1pt minus1pt}
+
+% line and paragraph spacing here for the separate abstract page
+\setlength{\abstractseparatelineskip}{13pt plus1pt minus1pt}
+\setlength{\abstractseparateparskip}{0pt plus 1pt}
+
+% general paragraph spacing
+\setlength{\parskip}{2pt plus 1pt}
+
+% university logo
+\def\crest{{\includegraphics[width=9cm]{templates/bath-logo.pdf}}}
+
+% univeristy and submitted text
+\renewcommand{\university}{University of Bath}
+
+% Leave this line alone; it gets things started for the real document.
+\setlength{\baselineskip}{\textbaselineskip}
+
+%%%%% CHOOSE SECTION NUMBERING DEPTH
+% 0 = chapter; 1 = section; 2 = subsection; 3 = subsubsection, 4 = paragraph...
+% how far down are sections numbered?  (Below that, they're named but don't get numbers.) 
+\setcounter{secnumdepth}{2}
+% what level of section appears in the table of contents?
+\setcounter{tocdepth}{2}
+
+%%%%% ABSTRACT SEPARATE
+% generate a separate abstract page (needed for some submissions)
+
+% start roman page numbering (for pre-body content)
+\begin{romanpages}
+
+%%%%% TITLE
+\maketitle % see bathreport.cls
+
+%%%%% DEDICATION
+
+%%%%% ACKNOWLEDGEMENTS
+
+%%%%% ABSTRACT
+\begin{abstract}
+	Extreme value theory provides a rigorous mathematical framework for modelling the tail behaviour of multivariate random variables, which is of interest in many application areas. Typically, the marginal distributions and extremal dependence structure are modelled separately. The extremal dependence structure describes the tail dependence between components and is characterised by a measure, called the angular measure, which must be estimated based on a small number of observed extreme events. Traditional methods for modelling the angular measure are limited to small or moderate dimensions. Recently, methods from unsupervised learning, such as clustering and principal components analysis (PCA), have been adapted to extremes and are better-equipped to handle high-dimensional settings. This report comprises a critical review of such methods, with a focus on the framework for extremal PCA developed by \textcite{cooleyDecompositionsDependenceHighdimensional2019} and the algorithm for generating hazard event sets proposed by \textcite{rohrbeckSimulatingFloodEvent2021}. After applying these methods to analyse extreme rainfall in France, we outline avenues for future research.
+\end{abstract}
+
+%%%%% RESPONSIBLE RESEARCH AND INNOVATION
+\begin{rri}
+	This project concerns the development of statistical learning methodology for estimating the dependence structure in high-dimensional extremes. In particular, we aim to improve methods for simulating extreme events and consider an example of modelling extreme rainfall. Synthetic event sets may be used by practitioners in order to assess and mitigate risk. For example, the height of a new dam may be chosen so that it protects against all water levels that it is likely to experience within its projected life span of, say, 100 years. The importance of advancing modelling for climate extremes is demonstrated by the devestating human and environmental impacts of recent record-breaking flood and wildfire events.
+
+ Our methods can be applied more broadly beyond climate extremes in a wide variety of areas, such as engineering, oceaography and finance. However, our modelling assumptions cannot hope to be valid, or even be entirely realistic, in all settings that may be considered. For example, asymptotic independence is a degenerate case in the framework that underlies our methods. In many settings, this will drastically bias the estimation of probabilities in the joint tail, leading to an under/overestimation of the risk of certain events. Thus, the methods should be used primarily as an exploratory tool. As mathematicians, we must guard against incentives to present our methods as practically applicable in settings or ways that they are not. This is especially true given the potentially severe consequences of the events considered in extremes. Most consumers of our research will be other academics or sophisticated practitioners, but the outcomes may occassionally be presented to broader audiences. In any case, we should endeavour to always make clear any assumptions on which our methods are based.
+
+ In this report, we illustrate and test our methods using an example dataset from the field of meteorology. There are no ethical considerations concerning the use of this dataset. The data was initially collected by Météo-France, the French meteorological service, and is freely available from the website of Dr Philippe Naveau, an academic at Laboratoire des Sciences du Climat et l'Environnement (LSCE) in France.
+\end{rri}
+
+%%%%% MINI TABLES
+% for per-chapter, mini tables of contents/figures/tables
+
+% aligns the bottom of the text of each page 
+\flushbottom
+
+%%%%% TABLE OF CONTENTS
+\tableofcontents
+
+%%%%% lIST OF FIGURES
+\listoffigures
+	\mtcaddchapter
+  	% \mtcaddchapter is needed when adding a non-chapter (but chapter-like) entity to avoid confusing minitoc
+
+%%%%% lIST OF TABLES
+
+%%%%% LIST OF ABBREVIATIONS
+
+% end roman page numbering 
+\end{romanpages}
+
+%%%%% CHAPTERS AND APPENDICES
+\flushbottom
+\hypertarget{introduction}{%
+\chapter{Introduction}\label{introduction}}
+
+\chaptermark{Introduction}
+\minitoc
+
+\noindent In many applications, such as environmental science and finance, we are interested in analysing the tail behaviour of a multivariate random variable in order to assess the risk of certain extreme events\footnote{The code for this project is available at \url{https://github.com/pawleymatthew/TFR}.}. This calls for a multivariate analysis using tools from multivariate extreme value theory, central to which is the notion of extremal dependence, i.e.~the tail dependence between components of a random vector. For example, practitioners need to be aware if several locations are likely to be jointly impacted by heavy rainfall, so that they can take action to mitigate the risk of large-scale flooding. The need to quantify extremal dependence is core to statistical techniques for multivariate extremes, but it is inherently challenging in high-dimensional settings.
+
+Mathematically speaking, the extremal dependence structure is characterised by a high-dimensional measure, called the angular measure. Estimating distributions in high dimensions is challenging; in the extremes setting it becomes harder still because only a small fraction of the data contains an informative signal for the distributional tail, limiting our effective sample size. Classical techniques, such as semi- or fully-parametric models, are generally too restrictive, suffer the curse of dimensionality, or are computationally infeasible \autocite{gumbelBivariateExponentialDistributions1960,tawnBivariateExtremeValue1988,huslerMaximaNormalRandom1989,wackernagelMultivariateGeostatisticsIntroduction1995,boldiMixtureModelMultivariate2007,decarvalhoSpectralDensityRatio2014,hansonBernsteinPolynomialAngular2017}. Instead, researchers are exploring how tools from statistical learning, such as clustering and principal component analysis (PCA), can be adapted for extremes \autocite{bernardClusteringMaximaSpatial2013,chautruDimensionReductionMultivariate2015,cooleyDecompositionsDependenceHighdimensional2019,fomichovDetectionGroupsConcomitant2020,janssenKmeansClusteringExtremes2020,dreesPrincipalComponentAnalysis2021,rohrbeckSimulatingFloodEvent2021}. These techniques are better-equipped to handle high-dimensional settings. This report comprises a critical review of such methods, with a focus on the framework for extremal PCA developed by \textcite{cooleyDecompositionsDependenceHighdimensional2019} and the algorithm for generating hazard event sets proposed by \textcite{rohrbeckSimulatingFloodEvent2021}. We perform a detailed illustration of these methods using French rainfall data, identify their limitations, and outline directions for future research.
+
+This report is organised as follows: Chapter \ref{background-theory} reviews the basic theory of extreme value theory within the framework of multivariate regular variation and overviews classical approaches for modelling the angular measure; Chapter \ref{survey} surveys statistical learning approaches that can handle high-dimensional settings, focussing on clustering and principal components analysis; Chapter \ref{application-fr-rain} applies some of these methods to French rainfall data; Chapter \ref{future-work} discusses their limitations and ideas for future research.
+
+\hypertarget{background-theory}{%
+\chapter{Background theory}\label{background-theory}}
+
+\chaptermark{Background theory}
+\minitoc
+
+\noindent
+
+\hypertarget{introduction-1}{%
+\section{Introduction}\label{introduction-1}}
+
+In a wide variety of applications, the study of extreme events is inherently a multivariate problem. Consider the context of climate extremes. We may be interested in studying the co-occurrence of extremes of several meteorological variables, e.g.~wind speed and precipitation as in \textcite{vignottoClusteringBivariateDependencies2021}. Alternatively, we might analyse spatial data concerning a single variable at several different locations, e.g.~\textcite{badorFutureSummerMegaheatwave2017} study temperature extremes in France. In each case the individual processes can be modelled using univariate techniques, but employing multivariate techniques that account for the inter-relationships between the processes' extremes will likely enhance the analysis. For example, in a spatial analysis we might expect that the data at one site could inform inferences at sites that are nearby or climatologically similar. Multivariate extreme value theory provides a rigorous mathematical framework for such analyses.
+
+This chapter will present the basic mathematical theory of multivariate extremes within the framework of multivariate regular variation. Herein, we split the analysis of the tail of a random vector into two steps: modelling the marginals and modelling the extremal dependence structure. The former requires techniques from univariate extreme value theory, which is briefly summarised in Section \ref{univariate-evt}. The phenomenon of extremal dependence - how do extremes in one component of a random vector relate to extremes in the other components? - is central to multivariate extremes. This concept, and the general theory of multivariate extremes, will be discussed in Section \ref{multivariate-evt}. We will find that the extremal dependence structure of a random vector is characterised by a measure, called the angular measure. Its estimation, particularly in high-dimensional settings, is inherently challenging and will be the focus of subsequent chapters.
+
+\hypertarget{univariate-evt}{%
+\section{Univariate extreme value theory}\label{univariate-evt}}
+
+The theory of univariate extremes is well developed. The basic theory presented here is based on \textcite{beirlantStatisticsExtremesTheory2004} and \textcite{colesIntroductionStatisticalModeling2001}; the reader is referred to these books for a more comprehensive overview.
+
+Suppose we are interested in modelling the (upper) tail behaviour of a random variable \(X\) with distribution function \(F\). Let \(X_1,X_2,\ldots,\) be a sequence of independent observations of \(X\). The key theoretical assumption underlying methods for modelling extremes is the so-called maximum domain of attraction condition (MDA): there exist sequences \(\{a_n>0\}\) and \(\{b_n\}\) and a non-degenerate random variable \(Z\sim G\) such that
+\begin{equation}
+\frac{\max(X_1,\ldots,X_n)-b_n}{a_n} \ind Z, \qquad n\to\infty.
+\label{eq:convergence-of-maxima}
+\end{equation}
+We say that \(X\) (or \(F\)) belongs to the maximum domain of attraction of \(Z\) (or \(G\)). The distribution \(G\) of \(Z\) belongs to a parametric family of distributions called the generalised extreme value (GEV) distribution \autocite{fisherLimitingFormsFrequency1928}. Its distribution function takes the following parametric form
+\begin{equation}
+G(z) = 
+\exp\left\lbrace -\left[1+\xi\left(\frac{z-\mu}{\sigma}\right)\right]_{+}^{-1/\xi}\right\rbrace,
+\label{eq:gev-distribution}
+\end{equation}
+defined on \(\{z:(1+\xi(z-\mu)/\sigma>0)\}\), where \(\mu\in\R\), \(\sigma>0\) and \(\xi\in\R\) are location, scale and shape parameters, respectively. The GEV family encompasses three sub-families of distributions which exhibit qualitatively different tail behaviours. These sub-families are determined by the shape parameter: \(\xi>0\) gives the heavy-tailed Fréchet distribution, \(\xi<0\) corresponds to the negative Weibull distribution with a finite upper limit, and \(\xi=0\) (interpreted as the limit of \eqref{eq:gev-distribution} as \(\xi\to 0\)) corresponds to the exponential-tailed Gumbel distribution. Under the fundamental MDA assumption, there are two main strategies for modelling extremes: the block maxima method and the peaks-over-threshold method.
+
+Models for block maxima are based on the representation \eqref{eq:gev-distribution}. Given a series of independent observations \(X_1,\ldots,X_n\), the data are divided into blocks of finite size \(m\). It follows from the asymptotic theory that, for \(m\) sufficiently large, the block maxima are approximately GEV distributed.
+
+A limitation of the block maxima approach is that it may fail to utilise some large observations, even though they may be informative for the tail. This motivates the alternative but intimately related peaks-over-threshold method, which considers the distribution of excesses over a given high threshold. If \(X\) is in the maximum domain of attraction of a \(\mathrm{GEV}(\mu,\sigma,\xi)\) distribution, then
+\begin{equation}
+\lim_{u\to\infty} \Prob{X>x+u \mid X>u} = 
+\left(1+\frac{\xi x}{\tilde{\sigma}}\right)_+^{-1/\xi}, 
+\label{eq:gpd-distribution}
+\end{equation}
+for \(x>0\), where \(\tilde{\sigma}=\sigma+\xi(u-\mu)\). The limiting conditional distribution is called the generalised Pareto distribution (GPD). Thus, for a sufficiently high fixed threshold \(u\), exceedances by \(X\) of \(u\) are approximately GPD distributed. In practice, the threshold \(u\) is chosen using graphical diagnostic tools \autocite[Section 4.3.1]{colesIntroductionStatisticalModeling2001} or test-based approaches \autocite{wadsworthExploitingStructureMaximum2016,wadsworthLikelihoodbasedProceduresThreshold2012}.
+
+\hypertarget{multivariate-evt}{%
+\section{Multivariate extreme value theory}\label{multivariate-evt}}
+
+\hypertarget{mv-reg-var-angular-measure}{%
+\subsection{Multivariate regular variation and the angular measure}\label{mv-reg-var-angular-measure}}
+
+We will study multivariate extremes within the framework of multivariate regular variation. Informally, a random vector is regularly varying if it is jointly heavy-tailed, meaning its joint tail decays according to a power law. A rigorous treatment of regular variation involves notions of convergence of measures; for details see \textcite{resnickExtremeValuesRegular1987} and \textcite{resnickHeavytailPhenomenaProbabilistic2007}. The regular variation framework is ubiquitous in multivariate extremes and in applications it is often assumed without validation, but a formal testing procedure has been developed \autocite{einmahlTestingMultivariateRegular2020}. Although regular variation can be defined generally on \(\R^d\), we restrict our attention to vectors on the non-negative orthant \(\R^d_+=[0,\infty)^d\). This restriction implicitly assumes a directionality in the risk being assessed. Such directionality usually exists in applications. For example, an analysis of extreme rainfall is typically concerned with either heavy rainfall (flood risk) or scarce rainfall (drought risk), but not both.
+
+The multivariate regular variation property implies that, for sufficiently large observations, the magnitude and direction of a random vector are approximately independent. Thus it is most simply described in terms of polar coordinates. Fix a norm \(\norm{\cdot}\) and denote the unit sphere on the non-negative orthant by \(\mathbb{S}_+^{d-1}=\{\bm{x}\in\R^d_+:\norm{\bm{x}}=1\}\). For any point \(\bm{x}\in\R^d_+\setminus\{\bm{0}\}\), define the polar coordinate transformation \(T(\bm{x})=(\norm{\bm{x}}, \bm{x}/\norm{\bm{x}})=:(r,\bm{w}).\) The radial component \(r\) measures the distance of \(\bm{x}\) from the origin and \(\bm{w}\in\mathbb{S}_+^{d-1}\) is the associated angle. If a \(d\)-dimensional random vector \(\bm{X}=(X_1,\ldots,X_d)^T\in\R^d_+\) is regularly varying with tail index \(\alpha>0\), denoted \(\bm{X}\in\mathrm{RV}^d_+(\alpha)\), then there exists a measure \(H\) on \(\mathbb{S}_+^{d-1}\) such that for any Borel set \(\mathcal{B}\subset\mathbb{S}_+^{d-1}\) and \(z>0\)
+\begin{equation}
+\lim_{r\to\infty} \Prob{\left. \snorm{\bm{X}}>rz, \frac{\bm{X}}{\snorm{\bm{X}}}\in\mathcal{B} \, \right| \, \snorm{X}>r} = z^{-\alpha} H(\mathcal{B}).
+\label{eq:regularly-varying}
+\end{equation}
+
+At first glance, the requirement that \(X_1,\ldots,X_d\) are heavy-tailed with a shared tail index may seem too restrictive to be useful. Indeed, this property is unlikely to be satisfied by the raw data, e.g.~the GEV/GPD shape parameters of some components may be zero or negative, indicating light or finite tails. This issue is resolved by working with a transformed random vector obtained from the original random vector by performing suitable marginal transformations. Working with transformed marginals is common practice in extremes and can be theoretically justified \autocite[p.~265]{resnickExtremeValuesRegular1987}. A popular choice is Fréchet margins with shape parameter \(\xi=\alpha\), that is \(\Prob{X_i\leq x}=\exp(-x^{-\alpha})\) for \(x>0\). This is achieved by transforming each \(X_i\) to \([-\log F_i(X_i)]^{-1/\alpha}\), where \(F_i\) is the marginal distribution function of \(X_i\).
+
+It follows from \eqref{eq:regularly-varying} that the extremal behaviour of a \(d\)-dimensional random vector \(\bm{X}\) is fully characterised by two quantities: the (known) tail index \(\alpha\), which governs the heavy-tailedness, and the \((d-1)\)-dimensional angular measure \(H\), which contains all the information about the extremal dependence structure, i.e.~the tail dependence between the components of \(\bm{X}\). More details will be given in Section \ref{extremal-dependence}.
+
+The radial-angular decomposition in \eqref{eq:regularly-varying} suggests - and provides a rigorous theoretical basis for - a practical strategy for extrapolating observed data to unobserved extreme levels: the angular components associated with observations above a high radial threshold may be used to estimate \(H\). Unfortunately, this becomes inherently challenging in high dimensions (\(d\gg 1\)): it requires estimating a high dimensional measure using only those few extreme observations that contain an informative signal for the distributional tail. Methods for overcoming this difficulty are the primary focus of this project and subsequent chapters of this report.
+
+\hypertarget{extremal-dependence}{%
+\subsection{Extremal dependence and summary measures}\label{extremal-dependence}}
+
+Extremal dependence is analogous to, but separate from, the notion of statistical dependence in non-extreme statistics. In particular, two random processes might appear independent in the standard sense but exhibit dependence in their extremes, e.g.~daily price movements for two unrelated stocks that are susceptible to common shocks. In applications, the extremal dependence structure may be quite complex. For example, in a spatial analysis of climate extremes, it captures information such as the topography of the domain, the underlying physics of the climate system, and the distance between the spatial locations.
+
+The concept of extremal dependence is formalised as follows. Define the tail correlation of \(X_i\) and \(X_j\) as
+\begin{equation}
+\chi_{ij} = \lim_{u\to 1}\chi_{ij}(u) = \lim_{u\to 1} \frac{\Prob{F_i(X_i)>u, F_j(X_j)>u}}{1-u}
+\label{eq:chi}
+\end{equation}
+where \(F_i\) denotes the distribution function of \(X_i\). The variables \(X_i\) and \(X_j\) are said to be asymptotically independent if \(\chi_{ij}=0\) and asymptotically dependent if \(\chi_{ij}>0\), with \(\chi_{ij}=1\) corresponding to complete asymptotic dependence. In practice, the tail correlation is estimated by computing estimates \(\hat{\chi}_{ij}(u)\) of \(\chi_{ij}(u)\) for a range of quantiles \(u\) and selecting one as an approximation to \(\chi_{ij}\) \autocite[Figure 2]{engelkeSparseStructuresMultivariate2021}. For any non-empty \(I\subset\{1,\ldots,d\}\), we can define \(\chi_I\) by extending \eqref{eq:chi} in the natural way. The subsets \(I\) with \(\chi_I>0\) correspond to groups of components that can be large simultaneously (with non-negligible probability).
+
+The angular measure contains all information about the extremal dependence of \(\bm{X}\). Asymptotic independence occurs if and only if \(H\) is concentrated on \(\bm{e}_1,\ldots,\bm{e}_d\), the vectors of the canonical basis of \(\R^d\). It is important to note that asymptotic independence is a limiting case that cannot be attained in the multivariate regular variation paradigm. On the other hand, \(\bm{X}\) exhibits complete asymptotic dependence if \(H\) places a single point mass at \(\gamma\bm{1}\in\mathbb{S}_+^{d-1}\) for some normalising constant \(\gamma>0\) that depends on the choice of norm. Between these two degenerate cases, the angular measure (and corresponding dependence structure) can be very complicated. This motivates the use of simple summary measures.
+
+The quantity \(\chi\) defined in \eqref{eq:chi} is a popular summary measure for assessing the strength of tail dependence. A limitation is that it fails to discriminate between asymptotically independent distributions; a complementary measure \(\bar{\chi}\) addresses this deficiency \autocite[Section 8.4]{colesIntroductionStatisticalModeling2001}. The set of tail coefficients \(\{\chi_{ij}:i,j=1,\ldots,d\}\) can be expressed in terms of \(H\), but provides an incomplete description of the dependence structure of \(\bm{X}\). In particular, \(\chi\) only measures the strength of pairwise dependencies.
+
+An alternative summary measure is the extremal dependence measure (EDM), defined in the bivariate case by \textcite{larssonExtremalDependenceMeasure2012}. For a regularly varying random vector \(\bm{X}\) with angular measure \(H\) on \(\mathbb{S}_+^{d-1}\), the EDM between \(X_i\) and \(X_j\) is given by
+\begin{equation}
+\mathrm{EDM}(X_i,X_j) = \int_{\mathbb{S}_+^{d-1}} w_i w_j \,\dee H(\bm{w}).
+\label{eq:edm}
+\end{equation}
+It is easy to see that \(\mathrm{EDM}(X_i,X_j)=0\) in the case of asymptotic independence and that \(\mathrm{EDM}(X_i,X_j)\) attains its maximum in the case of complete asymptotic dependence. Again, the set \(\{\mathrm{EDM}(X_i,X_j):i,j=1,\ldots,d\}\) is fully determined by the angular measure, but only contains summary information about the pairwise dependencies.
+
+\hypertarget{classical-models}{%
+\subsection{Classical models}\label{classical-models}}
+
+The family of possible extremal dependence structures is in one-to-one correspondence with the class of angular measures, i.e.~the class of positive measures on the unit simplex satisfying a number of mean constraints \autocite[Section 8.2.3]{beirlantStatisticsExtremesTheory2004}. Unfortunately, this class is very large and does not admit a finite-dimensional parametrisation. A popular approach is to perform inference within a well-chosen parametric sub-model, constructed in such a way that such that the parametric sub-family generates a wide class of (valid) dependence structures. However, the trade-off between model flexibility and model parsimony is difficult to manage. The logistic model, proposed initially in the bivariate setting by \textcite{gumbelBivariateExponentialDistributions1960}, has only one parameter and is symmetric in all components. This is too restrictive to capture the complex dependence structure encountered in many applications. An asymmetric extension of the logistic model, developed by \textcite{tawnBivariateExtremeValue1988}, is more flexible but at the expense of the dependence structure being defined by \(2^d\) parameters. The Hüsler-Reiss (HR) distribution \autocite{huslerMaximaNormalRandom1989} is parametrised by a conditionally negative definite matrix \(\Gamma\in\R^{d\times d}\), called the variogram, whose entries \(\Gamma_{ij}\) control the strength of extremal dependence between pairs of components of \(\bm{X}\). However, the number of parameters is \(d(d+1)/2\), which grows quickly as \(d\) increases. A more comprehensive overview of parametric models for multivariate extremes can be found in \textcite{gudendorfExtremeValueCopulas2010}. Generally, these models are ill-suited to high dimensions because they are either too inflexible or the number of parameters increases too rapidly. The curse of dimensionality results in a lack of parsimony and impedes inference. The latter issue is exacerbated by the fact that we have only a limited number of extreme observations at our disposal. Parsimonious models have been developed specifically for spatial applications, but they require prior domain knowledge and stationarity assumptions \autocite{wackernagelMultivariateGeostatisticsIntroduction1995}. This is too restrictive and precludes a purely data-driven approach.
+
+More recently, semi-parametric models have been explored. \textcite{boldiMixtureModelMultivariate2007} propose a constrained mixture of Dirichlet distributions, where the number of mixture components \(k\) is allowed to vary. The number of parameters is of order \(kd\). \textcite{hansonBernsteinPolynomialAngular2017} generalise the model to allow \(H\)-mass to be placed at the boundaries of \(\mathbb{S}_+^{d-1}\), and another extension by \textcite{decarvalhoSpectralDensityRatio2014} permits a mixture of different spectral distributions (not just Dirichlet). The drawbacks of these approaches are primarily practical in nature: model fitting is typically performed using a reversible jump MCMC (RJMCMC) algorithm that is cumbersome to implement and the computations become infeasible for large \(k\).
+
+The limitations of these classical models motivate research into alternative approaches using techniques from statistical learning. These will be reviewed in next chapter.
+
+\hypertarget{survey}{%
+\chapter{Literature review: extremal dependence in high dimensions}\label{survey}}
+
+\chaptermark{Literature review}
+\minitoc
+
+\noindent 
+
+\hypertarget{introduction-2}{%
+\section{Introduction}\label{introduction-2}}
+
+The tail dependence of a \(d\)-dimensional random vector is characterised by a \((d-1)\)-dimensional angular measure, whose estimation is challenging, especially in high dimensions. This difficulty has given rise to a new area of research concerning statistical learning methods for analysing extremal dependence. In some cases, these approaches are limited to a low or moderate number of dimensions \autocite{goixSparseRepresentationMultivariate2017,simpsonDeterminingDependenceStructure2019,meyerSparseRegularVariation2021}. A more promising line of research focusses on adapting popular unsupervised learning techniques, such as clustering and principal component analysis (PCA), for extremes \autocite{bernardClusteringMaximaSpatial2013,chautruDimensionReductionMultivariate2015,cooleyDecompositionsDependenceHighdimensional2019,dreesPrincipalComponentAnalysis2021,fomichovDetectionGroupsConcomitant2020,janssenKmeansClusteringExtremes2020,rohrbeckSimulatingFloodEvent2021}. If the angular measure has a sparse structure, then such methods can facilitate dimension reduction.
+
+\hypertarget{notions-of-sparsity}{%
+\subsection{Notions of sparsity}\label{notions-of-sparsity}}
+
+Clustering and principal components analysis are popular tools in multivariate statistics used to detect low-dimensional structures in data \autocite{jamesIntroductionStatisticalLearning2021}. Their application implicitly assumes a notion of sparsity, so that the object of interest can be expressed as (or at least well-approximated by) a lower-dimensional object. PCA assumes that certain linear combinations of the variables tend to be more likely than others, so that the data can be projected onto a lower-dimensional subspace while incurring minimal information loss. Clustering assumes that the observations can be partitioned into distinct, homogeneous subgroups. Thus, in order to adapt/apply these techniques to the analysis of multivariate tails, we require that the angular measure exhibits some sparse structure. Specifically, we assume that the dimension of the support of the angular measure \(H\) is much less than \(d\). In many applications, only a small number (\(\ll 2^d-1\)) of subsets of components are likely to be simultaneously large, so this assumption is usually reasonable. For example, heavy rainfall events tend to be localised so that only groups of neighbouring sites are jointly impacted. Notions of sparsity are discussed in more detail in \textcite{engelkeSparseStructuresMultivariate2021}.
+
+\hypertarget{data-simulation}{%
+\subsection{Data simulation}\label{data-simulation}}
+
+Some of the methods in this chapter will be illustrated using synthetic data generated from a \(d\)-variate max-stable Hüsler-Reiss (HR) distribution. Full details of the simulation framework and methodology are given in Appendix \ref{sim-hr}. We generate \(n=5000\) samples in \(d=75\) dimensions with \(\beta=2\). The dependence structure is constructed so that the angular measure is supported on fives faces of \(\mathbb{S}_+^{d-1}\), whose dimensions are 20, 20, 20, 10 and 5. Components belonging to different groups are asymptotically independent. Components belonging to the same group exhibit asymptotic dependence with varying strengths. Figure \ref{fig:simHR-exploratory-Chi} shows the entries of the matrix of tail correlation coefficients \(\chi_{ij}\). The darker coloured cells corresponds to pairs of components with strong extremal dependence. The zero entries in the off-diagonal blocks is due to asymptotic independence between components in different subgroups. Figure \ref{fig:simHR-exploratory-3dscatters} shows some exploratory plots, produced by projecting the sample angles of large observations onto various faces of the unit sphere \(\mathbb{S}_+^{2}=\{\bm{x}\in\R^3_+:\snorm{\bm{x}}_2=1\}\). In the left plot, all components are dependent, so we observe a number of points in the middle of the interior of the simplex. In the middle plot, only two of the components are asymptotically dependent. Extremes in \(X_1,\) and \(X_2\) are dependent and therefore likely to co-occur, but they are independent of extremes \(X_{21}\). As a result, the points are concentrated along the bottom edge and upper corner. In the third plot, all components are asymptotically independent and extremes tend to occur individually.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.6\linewidth]{figures/simHR-exploratory-Chi-1} 
+
+}
+
+\caption[True pairwise tail correlation coefficients for the simulated data.]{The matrix of true pairwise tail correlation coefficients $\chi_{ij}$ for the simulated data.}\label{fig:simHR-exploratory-Chi}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{figures/simHR-exploratory-3dscatters-1} \caption[Projected sample angles for the simulated data.]{Projections of the sample angles corresponding to largest 5\% of the simulated observations onto various faces of $\mathbb{S}_+^{2}$.}\label{fig:simHR-exploratory-3dscatters}
+\end{figure}
+
+\hypertarget{clustering}{%
+\section{Clustering}\label{clustering}}
+
+Clustering refers to the task of partitioning a set of objects into distinct, homogeneous subgroups, called clusters \autocite{jamesIntroductionStatisticalLearning2021}. Clustering is an unsupervised learning problem: the goal is to discover structure from a set of observations. Fundamental to any clustering method is the notion of (dis)similarity: to speak of homogeneous subgroups and heterogeneous observations we must define what it means for two objects to be similar/different. This is a domain-specific consideration. Techniques for cluster analysis in a non-extreme setting, such as \(k\)-means and hierarchical clustering, are well established and have been applied in many fields. Recent work adapts these methods for extremes to facilitate exploration of the extremal dependence structure.
+
+\hypertarget{clustering-based-on-pairwise-extremal-dependence-measures}{%
+\subsection{Clustering based on pairwise extremal dependence measures}\label{clustering-based-on-pairwise-extremal-dependence-measures}}
+
+The first class of methods clusters components of \(\bm{X}\) according to some dissimilarity defined in terms of a measure of pairwise extremal dependence. This approach was initially proposed by \textcite{bernardClusteringMaximaSpatial2013}. Given a sample \(\bm{X}_1,\ldots,\bm{X}_n\), they define the pairwise dissimilarity between components \(X_i\) and \(X_j\) as
+\begin{equation}
+d_{ij} = \frac{1-\chi_{ij}}{2(3-\chi_{ij})}
+\label{eq:f-madogram-distance}
+\end{equation}
+where \(\chi_{ij}\) is the tail correlation coefficient defined in Section \ref{extremal-dependence}. This defines an interpretable distance, termed the F-madogram distance, ranging from \(d_{ij}=0\) in the case of complete asymptotic dependence to \(d_{ij}=1/6\) for asymptotic independence. The dissimilarity matrix \(D=(d_{ij})\) can be estimated non-parametrically, and clustering is performed using the partitioning-around-medoids (PAM) algorithm of \textcite{kaufmanFindingGroupsData1990}, which is closely related to \(k\)-means. The output is a set of \(K\geq 2\) clusters such that tail dependence is stronger within groups than between groups. This method is very versatile: the dissimilarity measure in \eqref{eq:f-madogram-distance} can be tailored according to the particularities and aims of the study \autocite{badorFutureSummerMegaheatwave2017,brackenSpatialVariabilitySeasonal2015,mornetWindStormRisk2017,saundersRegionalisationApproachRainfall2020,vignottoClusteringBivariateDependencies2021}. A limitation is that the number of clusters, \(K\), is a hyperparameter that needs to be tuned. This is typically done by performing a silhouette analysis. The average silhouette coefficient, \(\bar{s}(K)\), quantifies how informative a clustering is by comparing the intra- and inter-cluster distances \autocite{rousseeuwSilhouettesGraphicalAid1987}. The number of clusters can be chosen by comparing \(\bar{s}(K)\) for a range of \(K\) values, as illustrated in Figure \ref{fig:simHR-pam-silwidths} for the simulated data. The plot indicates that there are five clusters, because \(\bar{s}(K)\) is maximal at \(K=5\). This is in accordance with the known true dependence structure. However, the diagnostic is unlikely to be so conclusive in applications where the dependence structure is more complicated \autocite[see][]{bernardClusteringMaximaSpatial2013}.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.7\linewidth]{figures/simHR-pam-silwidths-1} 
+
+}
+
+\caption[Silhouette analysis of PAM clusters for the simulated data.]{Silhouette analysis of the PAM clusters (based on F-madogram distances) for the simulated data. The average silhouette coefficient is maximised at $K=5$.}\label{fig:simHR-pam-silwidths}
+\end{figure}
+
+\hypertarget{bayesian-hierarchical-clustering}{%
+\subsection{Bayesian hierarchical clustering}\label{bayesian-hierarchical-clustering}}
+
+Another class of methods is based on hierarchical models, which are a natural approach for modelling spatial processes. Under this approach, the data is grouped into clusters at one or more levels. In a Bayesian hierarchical model, the number of groups, the cluster allocations, and the parameters for each cluster can be updated using Bayes' theorem. More details about hierarchical models can be found in \textcite{schervishTheoryStatistics1995}.
+
+In the context of clustering for spatial extremes, several methods have been proposed. \textcite{carreauPartitioningHazardSubregions2017} propose a peaks-over-threshold model in which the GPD shape parameter is constant within clusters. The clustering facilitates information pooled across sites, reducing uncertainty in the estimation of \(\xi\). However, their model gives no consideration to extremal dependence. \textcite{reichSpatialMarkovModel2019} allocate sites to \(K\) clusters using a spatial Potts model. The strength of spatial dependence over various scales is controlled by several parameters: \(K\) controls the limiting long-range dependence; the Potts parameter controls the rate of decay of dependence as a function of distance; a further parameter \(\alpha\) controls the strength of dependence within the clusters. Neither \textcite{carreauPartitioningHazardSubregions2017} nor \textcite{reichSpatialMarkovModel2019} have a mechanism to update the number of clusters \(K\), it must be chosen in advance. This deficiency is addressed by \textcite{rohrbeckBayesianSpatialClustering2020}. Given a number of clusters and a particular partition, their model is parametrised so that sites belonging to the same cluster have stronger extremal dependence, on average, and spatial dependence decays exponentially with distance, with a common rate of decay between clusters and a varying rate within clusters. The parameters, including \(K\) are updated by an RJMCMC algorithm.
+
+\hypertarget{spherical-clustering-of-extremal-angles}{%
+\subsection{Spherical clustering of extremal angles}\label{spherical-clustering-of-extremal-angles}}
+
+\textcite{chautruDimensionReductionMultivariate2015} propose exploring the angular measure by performing spherical clustering of the sample angles. Given sample data \(\bm{X}_1,\ldots,\bm{X}_{n}\in\R^d\), let \(\bm{w}_1,\ldots,\bm{w}_{n_{\text{exc}}}\in\mathbb{S}_+^{d-1}\) denote the set of angles (based on the Euclidean norm \(\snorm{\cdot}_2\)) associated with the \(n_{\text{exc}}\) observations above a given high radial threshold. The idea is to solve the optimisation problem
+\begin{equation}
+\min_{\bm{c}_1,\ldots,\bm{c}_K\in\mathbb{S}_+^{d-1}} \sum_{i=1}^{n_{\text{exc}}} \min_{j=1,\ldots,K} d(\bm{w}_i,\bm{c}_j),
+\label{eq:clustering-optimisation}
+\end{equation}
+where \(K\) is a hyperparameter, \(\bm{c}_1,\ldots,\bm{c}_K\) are the cluster centres (centroids), and \(d:\mathbb{S}_+^{d-1}\times\mathbb{S}_+^{d-1}\to[0,\infty)\) measures the dissimilarity between two points on the unit sphere. \textcite{janssenKmeansClusteringExtremes2020} take
+\begin{equation}
+d(\bm{u},\bm{v})=d_p(\bm{u},\bm{v}):=1-(\bm{u}^T\bm{v})^p,\qquad (\bm{u},\bm{v}\in\mathbb{S}_+^{d-1}),
+\label{eq:clustering-dp}
+\end{equation}
+with \(p=1\) and employ the spherical \(k\)-means clustering algorithm of \textcite{dhillonConceptDecompositionsLarge2001} to locate the cluster centres. The case \(p=2\) is considered by \textcite{fomichovDetectionGroupsConcomitant2020}. Theoretical results and numerical experiments indicate that choosing \(p=2\) yields better results, especially when pairwise extremal dependence within clusters tends to be weak. Moreover, there are interesting links between spherical clustering with \(d_2\) dissimilarity and extremal principal components analysis (the topic of the following section). For this reason, they refer to this special case of the general method as spherical \(k\)-principal-components clustering.
+
+The centroids can be interpreted as the angular components of prototypical extreme events. A popular strategy for estimating the support of the angular measure is to assign positive \(H\)-mass to a face of the unit sphere if a centroid lies within a certain neighbourhood of that face \autocite{chiapinoFeatureClusteringExtreme2017,goixSparseRepresentationMultivariate2017,simpsonDeterminingDependenceStructure2019,chiapinoIdentifyingGroupsVariables2018,meyerSparseRegularVariation2021}. Then the angular measure can be modelled by combining sub-models on each of these faces in a mixture model. However, these methods tend to be limited to moderate dimensions and they involve thresholding procedures that are highly sensitive to the choice of threshold. Figure \ref{fig:simHR-skmeans} is a visual representation of the entries of the centroids obtained by applying the methodology of \textcite{janssenKmeansClusteringExtremes2020} with \(K=5\) to the simulated data. On the whole, the centroids reflect the true dependence structure. However, the 74th component of \(\bm{X}\) appears to be erroneously allocated to the first cluster; this is caused by the weak dependence between \(X_{74}\) and the other components in its `true' subgroup (see Figure \ref{fig:simHR-exploratory-Chi}).
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{figures/simHR-skmeans-1} \caption[Spherical $k$-means cluster centroids for the simulated data.]{Representations of the cluster centroids obtained by applying spherical $k$-means clustering (with $d_1$ dissimilarity and $K=5$) to the simulated data. The colours of the cells represent the size of the corresponding entry in the vector $\bm{c}_j$. Clustering is based on the sample angles corresponding to observations for which $r_i=\snorm{\bm{x}_i}_2$ exceeds the 95\% quantile of $\{r_i:i=1,\ldots,n\}$.}\label{fig:simHR-skmeans}
+\end{figure}
+
+\hypertarget{principal-components-analysis}{%
+\section{Principal components analysis}\label{principal-components-analysis}}
+
+In the context of unsupervised learning, principal components analysis (PCA) refers to finding a low-dimensional linear subspace such that the data projected onto the subspace is as close as possible to the original data \autocite{jamesIntroductionStatisticalLearning2021}. In extremes, the goal is to find a low-dimensional subspace on which \(H\) is concentrated. \textcite{haugDimensionReductionBased2009} were the first to do this, but they assume a specific parametric form for the extremal dependence structure. \textcite{dreesPrincipalComponentAnalysis2021} and \textcite{cooleyDecompositionsDependenceHighdimensional2019} propose alternative statistical learning approaches that make no parametric assumption, in contrast.
+
+\hypertarget{pca-angles}{%
+\subsection{PCA for the extremal angles}\label{pca-angles}}
+
+\textcite{dreesPrincipalComponentAnalysis2021} consider the angles \(\bm{W}=\bm{X}/\snorm{\bm{X}}\) and follow the standard PCA approach by projecting \(\bm{W}\) onto low-dimensional linear subspaces \(V\subset\R^d\). The optimal subspace is that which minimises the conditional risk
+\begin{equation*}
+R_t(V) = \mathbb{E}\left[\left.\norm{\Pi_V\bm{W} - \bm{W}}_2^2 \right| \snorm{\bm{X}}>t\right],
+\end{equation*}
+for some high threshold \(t\), where \(\Pi_V\bm{W}\) denotes the orthogonal projection of \(\bm{W}\) onto \(V\). The risk measures the reconstruction error incurred by reverting to a lower dimensional space. While the projection \(\Pi_V\bm{W}\) does not necessarily lie on \(\mathbb{S}_+^{d-1}\), this can be remedied by rescaling/shifting appropriately. In practice, given sample angles \(\{\bm{w}_i=\bm{x}_i/\snorm{\bm{x}_i}\}_{i=1}^n\) the optimal subspace is estimated by considering the empirical risk
+\begin{equation}
+\hat{R}_t(V) = \frac{\sum_{i=1}^n \norm{\Pi_V\bm{w}_i - \bm{w}_i}^2\mathbbm{1}(\norm{\bm{x}_i}>t)}{\sum_{i=1}^n \mathbbm{1}(\norm{\bm{x}_i}>t)}.
+\label{eq:empirical-risk}
+\end{equation}
+As in standard PCA, there is a trade-off between reconstruction error and dimension reduction, because a high-dimensional subspace will yield better reconstructions than a lower-dimensional subspace. The number of dimensions is selected by comparing \(R_t(\hat{V}_p)\) for a range of values \(p\geq 1\), where \(\hat{V}_p\) denotes the minimiser of \(\hat{R}\) in the set of \(p\)-dimensional linear subspaces. The minimisers \(\{\hat{V}_p:p\geq 1\}\) can be derived via a spectral analysis of the matrix of second mixed moments of \(\bm{W}\). In high-dimensional simulation studies, \textcite{dreesPrincipalComponentAnalysis2021} find that employing PCA on \(\bm{W}\) does improve estimation of the angular measure (compared against a standard non-parametric estimator of \(H\)) but there are difficulties with choosing the number of dimensions.
+
+\hypertarget{pca-tpdm}{%
+\subsection{PCA based on the tail pairwise dependence matrix}\label{pca-tpdm}}
+
+Roughly speaking, the theory of multivariate regular variation presented in Section \ref{mv-reg-var-angular-measure} implies that performing PCA for \(\bm{W}\) is essentially equivalent to performing PCA for \(\bm{X}\) conditional on \(\snorm{\bm{X}}>t\) (up to some rescaling and assuming standardised marginals) in the limit as \(t\to\infty\). The latter interpretation underlies the approach originally developed by \textcite{cooleyDecompositionsDependenceHighdimensional2019} and later applied by \textcite{rohrbeckSimulatingFloodEvent2021} to generate synthetic extreme events. The remainder of this report comprises a critical review of their methodologies: this section presents theoretical details; Chapter \ref{application-fr-rain} illustrates their application; Chapter \ref{future-work} discusses limitations and directions for future work.\\
+Suppose \(\tilde{\bm{X}}\in\mathrm{RV}^d_+(2)\) is a random vector with Fréchet margins with shape \(\xi=2\), perhaps obtained by performing marginal transformations to the original random vector of interest \(\bm{X}\). Let \(H_X\) denote the angular measure of \(\tilde{\bm{X}}\) on the \(L_2\) unit sphere \(\mathbb{S}_+^{d-1}=\{\bm{x}\in\R^d_+:\norm{\bm{x}}_2=1\}\). The tail dependence of \(\tilde{\bm{X}}\) may be summarised by the \(d\times d\) matrix \(\Sigma=(\Sigma_{ij})\) given by
+\begin{equation}
+\Sigma_{ij} = \int_{\mathbb{S}_+^{d-1}} w_i w_j \,\dee H_X(\bm{w}).
+\label{eq:tpdm}
+\end{equation}
+The matrix \(\Sigma\) is called the tail pairwise dependence matrix (TPDM). It has been used to devise a suite of methods for analysing extremal dependence in various settings \autocite{fixSimultaneousAutoregressiveModels2021,mhatreTransformedLinearModelsTime2021}. The right-hand side of \eqref{eq:tpdm} is precisely the EDM from Section \ref{extremal-dependence}; the interpretation of the entries of \(\Sigma\) in terms of extremal dependence follows immediately. The choice of tail index \(\alpha=2\) endows the TPDM with properties analogous to that of the covariance matrix. In particular \autocite[Section 4]{cooleyDecompositionsDependenceHighdimensional2019}:
+
+\begin{enumerate}
+\item $\Sigma$ is non-negative definite.
+\item The diagonal elements $\Sigma_{ii}$ relate to the scale of the components of $\tilde{\bm{X}}$. Specifically, for any $x>0$,
+\begin{equation*}
+\lim_{n\to\infty} n\Prob{\frac{\tilde{X}_i}{\sqrt{n}}>x} = \frac{\Sigma_{ii}}{x^2}.
+\end{equation*}
+\item The sum of the diagonal elements of $\Sigma$ equals the total mass of $H_X$. 
+\item Two components $\tilde{X}_i$ and $\tilde{X}_j$ are asymptotically independent if and only if $\Sigma_{ij}=0$.
+\end{enumerate}
+
+Following the approach of standard PCA, we consider the eigendecomposition \(\Sigma=UDU^T\), where \(D\) is a diagonal matrix of real eigenvalues \(\lambda_1\geq\lambda_2\geq\ldots\geq\lambda_d\geq 0\) and \(U\in\R^{d\times d}\) is a unitary matrix whose columns are the corresponding eigenvectors \(\bm{u}_1,\ldots,\bm{u}_d\). Let \(\tau:\R\to[0,\infty)\) denote the softplus function defined by \(\tau(x)=\log(1+\exp(x))\) for \(x\in\R\). This function allows us to map between \(\R^d\) and \(\R_+^d\) without interfering with the tails. Applying the transform component-wise, the vectors \(\tau(\bm{u}_1),\ldots,\tau(\bm{u}_d)\) form an orthonormal basis for \(\R_+^d\). Moreover, the basis is ordered such that each vector corresponds to the direction of maximum scale after accounting for the information contained in the previous basis vectors. The eigenvalues measure the amount of scale explained by these directions.
+
+The extremal principal components of \(\tilde{\bm{X}}\) are defined by
+\begin{equation}
+\bm{V} = \bm{U}^T\tau^{-1}(\tilde{\bm{X}}).
+\label{eq:extremal-principal-components}
+\end{equation}
+Unlike \(\tilde{\bm{X}}\), the extremal principal components lie in the entire space \(\R^d\). By reversing \eqref{eq:extremal-principal-components}, it can be shown that
+\begin{equation}
+\tilde{\bm{X}} = \tau\left(\sum_{i=1}^d V_{i}\bm{u}_i\right).
+\label{eq:pca-reconstruction}
+\end{equation}
+Truncating the sum in \eqref{eq:pca-reconstruction} yields the optimal (in terms of \(L_2\)-distance) low-dimensional projections of \(\tilde{\bm{X}}\) \autocite{engelkeSparseStructuresMultivariate2021}.
+
+The random variable \(\bm{V}\) is multivariate regularly varying with tail index \(\alpha=2\) \autocite[Lemma A4]{cooleyDecompositionsDependenceHighdimensional2019}. Furthermore, the random variable \(\snorm{\bm{V}}_2\) follows a Fréchet distribution with \(\Prob{\snorm{\bm{V}}_2\leq t}=\exp[-(t/d)^{-2}]\) for \(t>0\), due to the norm preservation property of the unitary matrix \(U\) used in the projection in \eqref{eq:extremal-principal-components}. Let \(H_V\), defined on the entire unit sphere \(\mathbb{S}^{d-1}=\{\bm{x}\in\R^d:\norm{\bm{x}}_2=1\}\), denote the angular measure of \(\bm{V}\), and define the TPDM \(\tilde{\Sigma}\) of \(\bm{V}\) in the natural way, i.e.~by replacing \(H_X\) with \(H_V\) in \eqref{eq:tpdm}. By Proposition 6 in \textcite{cooleyDecompositionsDependenceHighdimensional2019}, we have \(\tilde{\Sigma}_{ii}=\lambda_i\) for \(i=1,\ldots,d\) and \(\tilde{\Sigma}_{ij}=0\) for \(i\neq j\). Unfortunately, now \(\tilde{\Sigma}_{ij}=0\) does not imply asymptotic independence between \(V_i\) and \(V_j\).
+
+\textcite{rohrbeckSimulatingFloodEvent2021} show how this framework can be exploited to generate samples from the tail of \(\tilde{\bm{X}}\) (and ultimately \(\bm{X}\), by applying the inverse of the initial marginal transformations). The key idea is to sample from the tail distribution of \(\bm{V}\) instead of directly sampling from the tail of \(\tilde{\bm{X}}\), which would require estimating \(H_X\). Unfortunately, since the extremal principal components are asymptotically dependent, sampling from the tail distribution of \(\bm{V}\) still requires the estimation of the \((d-1)\)-dimensional measure \(H_V\). However, the crucial difference is that the components of \(\bm{V}\) are ordered so that its first few components contain the most information about the structure of extreme events. In particular, for some high threshold \(r_V\), the distribution of
+\begin{equation*}
+\bm{W} = \left. \frac{\bm{V}}{\snorm{\bm{V}}_2} \, \right| \, \snorm{\bm{V}}_2>r_V
+\end{equation*}
+is estimated by combining a flexible model for the dependence structure of \((W_1,\ldots,W_m)\) and a restrictive model for the dependence structure of \((W_{m+1},\ldots,W_d)\). The value \(1\leq m\leq d\) is selected according to the number of eigenpairs needed to capture the large-scale extremal behaviour of \(\tilde{\bm{X}}\). Provided the angular measure of \(\tilde{\bm{X}}\) exhibits a sparse structure, \(m\ll d\) should be sufficient, so we reap the benefits of dimension reduction. Asymptotic dependence between the principal components dictates that, for a realistic model, the large-scale behaviour \((W_1,\ldots,W_m)\) and localised dynamics \((W_{m+1},\ldots,W_d)\) must be modelled jointly.
+
+The first step is to estimate the distribution of a lower-dimensional random vector \(\bm{Z}\in\mathbb{S}^{m+1}\) defined by \(Z_i=W_i\) for \(i=1,\ldots,m\) and
+\begin{equation*}
+Z_{m+1} = 
+\begin{cases}
+\sqrt{1-\sum_{i=1}^m W_i^2}, & \text{if } W_{m+1}\geq 0 \\
+-\sqrt{1-\sum_{i=1}^m W_i^2}, & \text{if } W_{m+1}< 0
+\end{cases}.
+\end{equation*}
+The first \(m\) components of \(\bm{Z}\) describe the large-scale dependence structure, while the final component \(Z_{m+1}\) summarises local dynamics. The distribution of \(\bm{Z}\) is then modelled by a suitable kernel density estimate for spherical data. \textcite{rohrbeckSimulatingFloodEvent2021} choose a mixture of Mises-Fisher distributions \autocite{hallKernelDensityEstimation1986}: given observations \(\{\bm{z}_i:i=1,\ldots,n_{\text{exc}}\}\) the estimated density is given by
+\begin{equation*}
+\hat{h}(\bm{z})=\frac{C(\kappa)}{n_{\text{exc}}} \sum_{i=1}^{n_{\text{exc}}}\exp(\kappa\bm{z}^T\bm{z}_i),
+\end{equation*}
+for \(\bm{z}\in\mathbb{S}^{m+1}\), where \(\kappa>0\) is the bandwidth of the kernels and \(C(\kappa)\) is a normalising constant.
+
+Given a sample \(\bm{z}\in\mathbb{S}^{m+1}\) from the fitted distribution for \(\bm{Z}\), a sample \(\bm{w}\in\mathbb{S}^{d-1}\) is derived by a nearest neighbours approach, by setting
+\begin{equation*}
+\bm{w} = \left(z_1,\ldots,z_m,\abs{\frac{z_{m+1}}{z_{m+1}^\star}}w_{m+1},\ldots,\abs{\frac{z_{m+1}}{z_{m+1}^\star}}w_{d}\right),
+\end{equation*}
+where \(\bm{z}^\star\) is the nearest neighbour of \(\bm{z}\) amongst \(\{\bm{z}_i:i=1,\ldots,n_{\text{exc}}\}\). The simulated principal components \(\bm{v}\in\R^d\) are given by \(\bm{v}=r\bm{w}\), where \(r=\snorm{\bm{V}}_2\) is sampled from a Fréchet distribution with \(\Prob{\snorm{\bm{V}}_2\leq t}=\exp[-(t/d)^{-2}]\). Finally, a sample \(\tilde{\bm{x}}\in\R_+^d\) from the approximate tail distribution of \(\tilde{\bm{x}}\) is obtained by applying the inverse of \eqref{eq:extremal-principal-components} to \(\bm{v}\).
+
+The next chapter will illustrate how these methods are applied and provide more practical details regarding their implementation.
+
+\hypertarget{application-fr-rain}{%
+\chapter{Application to the France rainfall data}\label{application-fr-rain}}
+
+\chaptermark{Application to the France rainfall data}
+\minitoc
+
+This chapter illustrates how extremal PCA is applied using a real-world dataset from climatology. In Section \ref{fr-pca-analysis}, we perform an analysis of extreme rainfall in France using the framework of \textcite{cooleyDecompositionsDependenceHighdimensional2019}. Then the sampling algorithm of \textcite{rohrbeckSimulatingFloodEvent2021} is applied in Section \ref{fr-generate-events} to generate synthetic extreme rainfall events. The underlying theoretical details for these methods were summarised in Section \ref{pca-tpdm}; the emphasis of this chapter is showing how these tools are used in practice. From this exercise we can identify limitations/deficiencies that could be addressed by future research, which will be discussed in the next chapter.
+
+\hypertarget{data-description}{%
+\section{Data description}\label{data-description}}
+
+The French precipitation dataset consists of the weekly maxima of hourly precipitation measured at \(d=92\) weather stations in France during the autumn season (September-November) between 1993 and 2011\footnote{The data was collected by Météo-France, the French meteorological service, and is available from the homepage of the second author of \textcite{bernardClusteringMaximaSpatial2013} at \url{https://www.lsce.ipsl.fr/Phocea/Pisp/visu.php?id=109\&uid=naveau}.}. The weather stations provide a fairly complete and homogeneous coverage of France, as illustrated in Figure \ref{fig:fr-stations-map}. There are \(T=228\) weeks of recorded rainfall maxima at each station, with no missing data. Figure \ref{fig:fr-data-time-series} shows the time series recorded at Montereau-sur-le-Jard (a commune near Paris) and Tarbes--Lourdes--Pyrénées Airport (on the southwest coast). These stations are marked in red in Figure \ref{fig:fr-stations-map}. An important assumption underlying our methods is that there is no serial dependence within the time series. This assumption seems reasonable for hourly precipitation maxima taken over weekly periods and the autocorrelograms in Figure \ref{fig:fr-data-time-series} provide further assurance.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.65\linewidth]{figures/fr-stations-map-1} 
+
+}
+
+\caption[Map of Météo-France weather stations.]{The locations of the 92 Météo-France weather stations. Montereau-sur-le-Jard and Tarbes–Lourdes–Pyrénées Airport are marked in red.}\label{fig:fr-stations-map}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=1\linewidth]{figures/fr-data-time-series-1} \caption[Raw time series and autocorrelograms for two weather stations.]{Top: weekly maxima of hourly precipitation recorded at Montereau-sur-le-Jard (left) and Tarbes–Lourdes–Pyrénées Airport (right). Bottom: the autocorrelograms for each time series. The dashed lines indicate the 95\% confidence intervals.}\label{fig:fr-data-time-series}
+\end{figure}
+
+\hypertarget{fr-pca-analysis}{%
+\section{Analysing extremal dependence using extremal PCA}\label{fr-pca-analysis}}
+
+\hypertarget{data-preprocessing}{%
+\subsection{Data preprocessing}\label{data-preprocessing}}
+
+Let \(X_{t,i}\) denote the random variable representing the maximum hourly precipitation at station \(i\) during week \(t\), for \(i=1,\ldots,d\) and \(t=1,\ldots,T\), and let \(\bm{X}_t=(X_{t,1},...,X_{t,d})\). We apply a transformation to \(\bm{X}_t\) in order to obtain a random variable \(\tilde{\bm{X}}_t = (\tilde{X}_{t,1},\ldots,\tilde{X}_{t,d})\) that is regularly varying with tail index \(\alpha=2\) and has Fréchet margins, \(\Prob{\tilde{X}_{t,i}\leq x} = \exp(-x^{-2})\) for \(x>0\). This is achieved by defining
+\begin{equation}
+\tilde{X}_{t,i} = \left[-\log \hat{F}_i(X_{t,i})\right]^{-1/2}
+\label{eq:marginal-transformation}
+\end{equation}
+for \(i=1,\ldots,d\) and \(\, t=1,\ldots,T\), where \(\hat{F}_i\) is an estimate of the distribution function for the weekly precipitation maxima at station \(i\). Here we take \(\hat{F}_i\) to be the empirical CDF obtained by a rank transform; a more sophisticated semi-parametric approach is outlined in \textcite{rohrbeckSimulatingFloodEvent2021}. Let \(\tilde{\bm{x}}_1,\ldots,\tilde{\bm{x}}_T\) be the set of transformed observations obtained by applying the transformation \eqref{eq:marginal-transformation} to the original measurements \(\bm{x}_1,\ldots,\bm{x}_T\).
+
+\hypertarget{estimation-tpdm}{%
+\subsection{Estimation of the TPDM}\label{estimation-tpdm}}
+
+Next, we estimate the tail pairwise dependence matrix (TPDM), \(\Sigma\). There are two estimators used in the literature. The first approach, used by \textcite{cooleyDecompositionsDependenceHighdimensional2019} and \textcite{rohrbeckSimulatingFloodEvent2021}, is to threshold observations based on the entire vector. Define \(r_t=\snorm{\tilde{\bm{x}}_t}_2\) and set \(r^\star\) as some high quantile of \(\{r_t : t=1,\ldots,T\}\). Let \(\mathcal{T}^\star=\{t:r_t>r^\star\}\) represent the set of times at which extreme events occurred and denote by \(\bm{w}_{t}=\tilde{\bm{x}}_{t}/r_t\) the associated angular components. Then the vector-based TPDM estimate is defined as the \(d\times d\) matrix \(\hat{\Sigma}^{(v)}\) with entries
+\begin{equation}
+\hat{\Sigma}_{i,j}^{(v)} = \frac{d}{\sabs{\mathcal{T}^\star}}\sum_{t\in\mathcal{T}^\star} w_{t,i}w_{t,j}.
+\label{eq:vector-based-tpdm-estimate}
+\end{equation}
+The second approach, adopted by \textcite{jiangPrincipalComponentAnalysis2020}, is based on pairwise radial thresholds. For \(i,j\in\{1,\ldots,d\}\), define the radius \(r_{t,i,j}=\snorm{(\tilde{x}_{t,i},\tilde{x}_{t,j})}_2\). Choose a high radial threshold \(r_{i,j}^\star\) of \(\{r_{t,i,j} : t=1,\ldots,T\}\) and define \(\mathcal{T}_{i,j}^\star=\{t:r_{t,i,j}>r_{i,j}^\star\}\). In a slight abuse of notation, define the angular components \((w_{t,i},w_{t,j})=(x_{t,i},x_{t,j})/r_{t,i,j}\). Then the pairs-based TPDM estimate is defined as the \(d\times d\) matrix \(\hat{\Sigma}^{(p)}\) with entries
+\begin{equation}
+\hat{\Sigma}_{i,j}^{(p)} = \frac{2}{\sabs{\mathcal{T}^\star_{i,j}}}\sum_{t\in\mathcal{T}^\star_{i,j}} w_{t,i}w_{t,j}.
+\label{eq:pairs-based-tpdm-estimate}
+\end{equation}
+This matrix is not guaranteed to be positive definite, which is required for PCA. This issue is resolved by taking the final estimate \(\hat{\Sigma}^{(p)}\) as the nearest (in terms of Frobenius norm) positive definite matrix to the matrix obtained from \eqref{eq:pairs-based-tpdm-estimate}. Another issue with this estimator is that the interpretation of the diagonal elements in terms of the components' scales is lost. In fact, it is easy to show that \(\hat{\Sigma}_{i,i}^{(p)}=1\) for all \(i\).
+
+The key difference between the estimators is that \(\hat{\Sigma}_{i,j}^{(v)}\) uses observations that are extreme globally (even if \(X_i\) and \(X_j\) themselves are not large) while \(\hat{\Sigma}_{i,j}^{(p)}\) is based on events for which \(X_i\) and \(X_j\) are large (irrespective of the size of the other components). For this reason, the pairs-based estimator might be preferred for analyses where behaviour is expected to be highly localised, e.g.~if the study region is large. Our spatial domain is larger than those of \textcite{cooleyDecompositionsDependenceHighdimensional2019} and \textcite{rohrbeckSimulatingFloodEvent2021} but smaller than that of \textcite{jiangPrincipalComponentAnalysis2020}, so it is not obvious which estimator we should prefer. Both estimates for \(\Sigma\), based on radial thresholds taken at the empirical 85\% quantile, are illustrated in Figure \ref{fig:fr-tpdm-levelplot}. The stations are ordered by increasing longitude (i.e.~from south to north). Apart from the differences in scaling the two matrices are quite similar, structurally speaking. Subsequent examination of their respective eigenpairs revealed no discernible differences. Therefore we proceed with the vector-based estimate on the basis that it is simpler, faster to compute, and satisfies all the properties of a TPDM. Henceforth, \(\hat{\Sigma}\) denotes the vector-based estimate, unless stated otherwise.
+
+\textcite{huserLikelihoodEstimatorsMultivariate2016} note that threshold-based estimators have a tendency to overestimate dependence when the true dependence is weak/moderate. In order to mitigate this bias, \textcite{fixSimultaneousAutoregressiveModels2021} modify the estimator such that \(\hat{\Sigma}_{ij}\) is close to zero if the distance between stations \(i\) and \(j\) is large. This assumption is reasonable due to the localised nature of extreme rainfall events. For simplicity, we opt not incorporate any bias correction into our estimate, but it is worth investigating in future.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.48\linewidth]{figures/fr-tpdm-levelplot-1} \includegraphics[width=0.48\linewidth]{figures/fr-tpdm-levelplot-2} 
+
+}
+
+\caption[Entries of the vector- and pairs-based TPDM estimates. ]{Entries $\hat{\Sigma}_{ij}$ of the vector-based (left) and pairs-based (right) TPDM estimates. The radial thresholds were set as the empirical 85\% quantile.}\label{fig:fr-tpdm-levelplot}
+\end{figure}
+
+\hypertarget{fr-eigenvalues}{%
+\subsection{Examining the eigenvalues}\label{fr-eigenvalues}}
+
+We perform an eigendecomposition of \(\hat{\Sigma}\) to obtain \(\hat{\Sigma}=\hat{U}\hat{D}\hat{U}^T\), where \(\hat{D}\) is a diagonal matrix of real eigenvalues \(\lambda_1\geq\lambda_2\geq\ldots\geq\lambda_d>0\) and \(\hat{U}\) is a \(d\times d\) unitary matrix whose columns are the corresponding eigenvectors \(\hat{\bm{u}}_1,\ldots,\hat{\bm{u}}_d\in\R^d\).
+
+Figure \ref{fig:fr-tpdm-evals} shows a scree plot of the first 30 eigenvalues of \(\hat{\Sigma}\). The first eigenvalue is very large; thereafter the values slowly decrease to zero. The first six eigenvalues are \((\lambda_1,\ldots,\lambda_6)=(52.2, 3.3, 2.9, 2.5, 2.3, 2.2)\). This implies that the first six principal components account for \(71\%\) of the total scale of \(\tilde{\bm{X}}\). For comparison, studies of extreme rainfall in the continental US and a small region of the UK found that the first six eigenvectors accounted for 41\% and 88\% of the scale, respectively \autocite{jiangPrincipalComponentAnalysis2020,rohrbeckSimulatingFloodEvent2021}. The differences between these values are in accordance with the sizes of the study regions and the degree to which extreme events are localised. We conclude that extreme precipitation in France is quite localised and a large number of eigenvectors will be required to reconstruct small-scale features of extreme events.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.7\linewidth]{figures/fr-tpdm-evals-1} 
+
+}
+
+\caption[Eigenvalues of the TPDM.]{Eigenvalues of the first 30 eigenvalues of the TPDM on a log scale.}\label{fig:fr-tpdm-evals}
+\end{figure}
+
+\hypertarget{interpreting-the-eigenvectors}{%
+\subsection{Interpreting the eigenvectors}\label{interpreting-the-eigenvectors}}
+
+The leading eigenvectors reveal the large-scale spatial behaviour of extreme rainfall events in France. Spatial representations of first six eigenvectors are shown in Figure \ref{fig:fr-tpdm-evecs}. The first eigenvector, \(\hat{\bm{u}}_1\), is positive and accounts for the magnitude of extreme events. The spatial patterns in \(\hat{\bm{u}}_1\) do not necessarily reflect the marginal law behaviour at each site, cf.~Figure 1b in \textcite{bernardClusteringMaximaSpatial2013}. This is primarily because we are working with standardised data, for which `extreme' should be interpreted as `extreme relative to the climate at that location'. The second eigenvector reveals a north-south signal. This divide can be justified climatologically: extreme events in the south are due to thunderstorms caused by warm air interacting with the mountainous regions (Pyrénées/Cévennes/Alps); heavy rainfall in the north is produced by midlatitude perturbations \autocite{bernardClusteringMaximaSpatial2013}. The third eigenvector shows a strong negative signal on the south-west coast. An east-west divide along the southern coast makes sense because extreme events originating in Toulon or Nice tend to not to affect areas to the west of Montpellier. The subsequent eigenvectors reveal more localised patterns in extremal behaviour and are more difficult to interpret.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-tpdm-evecs-1} 
+
+}
+
+\caption[First six eigenvectors of the TPDM.]{First six eigenvectors of the TPDM.}\label{fig:fr-tpdm-evecs}
+\end{figure}
+
+\hypertarget{analysing-the-extremal-principal-components}{%
+\subsection{Analysing the extremal principal components}\label{analysing-the-extremal-principal-components}}
+
+Finally, we study the extremal principal components given by \(\bm{v}_t = \hat{\bm{U}}^T\tau^{-1}(\tilde{\bm{x}}_t)\) for \(t=1,\ldots,T\). The elements of \(\bm{v}_t\in\R^d\) are the stochastic basis coefficients when \(\tilde{\bm{x}}_t\) is decomposed into the basis \(\tau(\hat{\bm{u}}_1),\ldots,\tau(\hat{\bm{u}}_d)\). Figure \ref{fig:fr-tpdm-pcs} shows time series plots of the extremal principal components associated with the first three eigenvectors. The points highlighted in red correspond to the weeks for which \(r_t=\snorm{\tilde{\bm{x}}_t}_2\) exceeds the 95\% quantile of \(\{r_t:t=1,\ldots,T\}\). Importantly, note that the extremes of \(\bm{V}\) tend to coincide with the extremes of \(\tilde{\bm{X}}\).
+
+The role of the principal components is most easily illustrated by exploring an observed extreme event. Figure \ref{fig:fr-event-181} shows an array of plots associated with the event in week \(t=181\). The top left plot is a spatial representation of the event (after marginal transformation). Extreme rainfall intensities occurred in the mountainous region to the south/east of Lyon. The top right plot shows the elements of \(\bm{v}_{181}\). Roughly speaking, the sizes of the \(\abs{V_{t,i}}\) tell us which eigenvectors are most important for capturing the event's spatial dynamics, since \(V_{t,i}\) represents the coefficient associated with the \(i\)th eigenvector in the reconstruction. In this sense, the four most important eigenvectors are the first, second, third and seventeenth eigenvectors. Spatial representations of these eigenvectors are plotted in the second row of Figure \ref{fig:fr-event-181} (the first eigenvector is omitted because it isn't particularly informative). The third eigenvector is hit by a large positive coefficient, which primarily allocates precipitation to the south east region. The negative coefficient \(V_{181,2}\) diminishes the signal in the north and further boosts the signal in the south east. The seventeenth eigenvector captures very small-scale behaviours and serves to amplify the signal at the specific sites where the rainfall intensity was strongest (near Lyon and Avignon). The plots in the third and fourth rows of Figure \ref{fig:fr-event-181} show a series of low-dimensional reconstructions of \(\tilde{\bm{x}}_{181}\) obtained by truncating the sum in \eqref{eq:pca-reconstruction}. Note that the first four reconstructions have scaling issues: the intensities are generally too low because the omitted eigenvectors account for a non-negligible amount of scale. The eigenvalues of \(\hat{\Sigma}\) decrease quite gradually, so this is only resolved once a large number of eigenvectors are added. The spatial attribution of rainfall improves as more principal components are added. The two-eigenvector reconstruction allocates rainfall too broadly; we know that the unused third eigenvector is important in restricting rainfall to the south east. The five eigenvector reconstruction looks much better but still overestimates rainfall in parts of the north. After 20 eigenvectors the reconstructed event looks quite accurate with only minor discrepancies, but the overall scale is still too low. The 45 eigenvector reconstruction matches the full basis reconstruction almost perfectly, because the omitted eigenvectors account for negligible scale (\(\lambda_i\approx 0\) for \(i>45\)) and their coefficients in the basis expansion are approximately zero (top right plot).
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-tpdm-pcs-1} 
+
+}
+
+\caption[Time series of the observed extremal principal components.]{Time series of the observed extremal principal components. The weeks for which $r_t=\snorm{\tilde{\bm{x}}_t}_2$ exceeds the 95\% quantile of $\{r_t:t=1,\ldots,T\}$ are highlighted in red.}\label{fig:fr-tpdm-pcs}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-event-181-1} 
+
+}
+
+\caption[Exploration of the extreme event at $t=181$.]{Exploration of the extreme event at $t=181$. Top left: the observed event (after marginal transformation). Top right: the components of $\bm{v}_{181}$, with the three biggest components in absolute value (excluding the first principal component) highlighted in red. Second row: the eigenvectors corresponding to the highlighted principal components. Third and fourth rows: reconstructions based on a limited number of the leading eigenvectors.}\label{fig:fr-event-181}
+\end{figure}
+
+\hypertarget{fr-generate-events}{%
+\section{Generating hazard event sets}\label{fr-generate-events}}
+
+\hypertarget{fitting-the-mixture-distribution-for-bmz}{%
+\subsection{\texorpdfstring{Fitting the mixture distribution for \(\bm{Z}\)}{Fitting the mixture distribution for \textbackslash bm\{Z\}}}\label{fitting-the-mixture-distribution-for-bmz}}
+
+We assume that the first four eigenpairs capture the large-scale dynamics of heavy rainfall events. At this stage, this choice of \(m=4\) is somewhat arbitrary and the analysis in Section \ref{fr-eigenvalues} indicates that \(m\) should actually be much larger - this will be investigated later in Section \ref{fr-tuning-m}. From the principal components \(\{\bm{v}_t:t=1,\ldots,T\}\) we derive a set of observations \(\{\bm{z_i}\in\mathbb{S}^{5}:i=1,\ldots,n_{\text{exc}}\) of \(\bm{Z}\) by following the procedure described in Section \ref{pca-tpdm}, with \(r_V\) set as the empirical 85\% quantile of \(\{\snorm{\bm{v}_t}_2:t=1,\ldots,T\}\). The next step is to fit a Mises-Fisher mixture distribution for \(\bm{Z}\). Following the suggestion of \textcite{rohrbeckSimulatingFloodEvent2021}, an estimate \(\hat{\kappa}=0.14\) for the kernel bandwidth is obtained using the \texttt{vmfkde.tune} function from the \texttt{Directional} package in \textsf{R}. The \texttt{rmixvmf} function from the same package is used to generate samples from this fitted distribution. Samples of \(\tilde{\bm{X}}\) can be derived from samples of \(\bm{Z}\) as described earlier.
+
+\hypertarget{analysing-a-single-generated-hazard-event-set}{%
+\subsection{Analysing a single generated hazard event set}\label{analysing-a-single-generated-hazard-event-set}}
+
+First, we simulate a single hazard event set corresponding to a 50-year period (i.e.~\(T=600\) autumn weeks). Figure \ref{fig:fr-sim-obs-pairwise} compares the simulated and observed events at three pairs of stations. The dependencies for the simulated events reflect those of the observed events. This rough check suggests that the sampling algorithm is performing correctly. Figure \ref{fig:fr-sim-event-map} illustrates the three events with the largest size \(\snorm{\tilde{\bm{x}}}_2\). The left plot shows an event with extremely heavy rainfall in central and south-eastern France, including at Romorantin-Lanthenay (cf.~the right-hand plot in Figure \ref{fig:fr-sim-obs-pairwise}). The middle plot shows a very widespread event; the right plot shows an event where the rainfall intensity was especially high at a single site near Paris. This information is useful to practitioners for risk assessment/mitigation purposes.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-sim-obs-pairwise-1} 
+
+}
+
+\caption[Simulated and observed events at three pairs of stations.]{Pairwise plots for the simulated (grey) and observed (black) events at three pairs of stations with varying levels of extremal dependence. The simulated events are based on the 50-year hazard event set. }\label{fig:fr-sim-obs-pairwise}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-sim-event-map-1} 
+
+}
+
+\caption[Spatial representations of the largest three simulated events.]{Spatial representations of the three largest events from the simulated 50-year event set.}\label{fig:fr-sim-event-map}
+\end{figure}
+
+\hypertarget{fr-tuning-m}{%
+\subsection{\texorpdfstring{Choosing the hyperparameter \(m\)}{Choosing the hyperparameter m}}\label{fr-tuning-m}}
+
+The choice of \(m\) will impact the quality of the simulations. If \(m\) is too small, then the model will fail to capture the large-scale structure of extremes and the synthetic events will be unrealistic. If \(m\) is too large, then there is a risk of overfitting to the noise contained in the higher order eigenvectors, and the original statistical difficulty of estimating a high-dimensional distribution with a small effective sample size has not been avoided. This raises the question of how to select \(m\), which has not been addressed thus far. We now explore two possible approaches for doing this.
+
+The first method is inspired by the model fitting process in \textcite{fixSimultaneousAutoregressiveModels2021}. They estimate the parameter \(\rho\) of a spatial autoregressive (SAR) model by minimising the discrepancy \(\snorm{\Sigma(\rho)-\hat{\Sigma}}_\mathrm{F}\) between \(\Sigma(\rho)\), the theoretical TPDM under their model, and \(\hat{\Sigma}\), the TPDM estimated from the original data. Here \(\snorm{\cdot}_\mathrm{F}\) denotes the Frobenius matrix norm, given by
+\begin{equation*}
+\snorm{A}_\mathrm{F} = \sqrt{\sum_i\sum_j \abs{a_{ij}}^2} \equiv \sqrt{\mathrm{trace}(A^\star A)}.
+\end{equation*}
+The process is as follows. Fix \(m\) and simulate a set of events. Then, compute the TPDM estimate \(\hat{\Sigma}(m)\) using the simulated data and calculate the Frobenius distance \(\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}\). This process is repeated for 1,000 hazard event sets and we take the median. The results (along with 95\% bootstrap confidence intervals) are shown in Figure \ref{fig:fr-tpdm-m-trend} (left plot). The graph exhibits a U-shape which agrees with our earlier hypothesis that \(m\) should be `not too small' or `not too large'. Here, \(m\approx 12\) appears optimal.
+
+The second approach follows an identical process, except now we estimate \(\hat{\Sigma}(m)\) based on the set of \(m\)-eigenvector reconstructions of the observed events. From Figure \ref{fig:fr-event-181} we know that the quality of the reconstruction improves as \(m\) increases so that we should expect \(\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}\) to decrease with \(m\), with diminishing returns as \(m\) gets large. The results are given in the right plot in Figure \ref{fig:fr-tpdm-m-trend}. We observe that the error is not strictly decreasing. This is because the reconstructions are optimal with respect to a metric that is different to \(\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}\). The plot suggests that taking \(m\approx 20\) should be sufficient. This finding tallies with our earlier comments about the sequence of reconstructions in Figure \ref{fig:fr-event-181}. However, our two approaches for choosing \(m\) lead to different conclusions. This divergence, and other avenues to explore in future work, will be discussed further in the next chapter.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figures/fr-tpdm-m-trend-1} 
+
+}
+
+\caption[Discrepancy between observed and simulated/reconstructed TPDMs against $m$.]{The error $\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}$ aginst $m$. Left: when $\hat{\Sigma}(m)$ is estimated simulated events; we take the median over 1,000 19-year event sets and compute $95\%$ bootstrap confidence intervals. Right: when $\hat{\Sigma}(m)$ is estimated based on the set of $m$-eigenvector reconstructions.}\label{fig:fr-tpdm-m-trend}
+\end{figure}
+
+\hypertarget{future-work}{%
+\chapter{Future work}\label{future-work}}
+
+\chaptermark{Future work}
+\minitoc
+
+\noindent This concluding chapter will identify limitations in the existing methodology and outline some ideas for how these can be addressed in future work.
+
+\hypertarget{choosing-m-in-applications}{%
+\section{\texorpdfstring{Choosing \(m\) in applications}{Choosing m in applications}}\label{choosing-m-in-applications}}
+
+The parameter \(m\) plays a crucial role in determining the realism and usefulness of the synthetic events generated by the sampling algorithm of \textcite{rohrbeckSimulatingFloodEvent2021}. However, a good criterion for selecting \(m\) has not been established thus far. The standard approach is to perform a spectral analysis and choose \(m\) such that \(\sum_{i=1}^m \lambda_i/\sum_{i=1}^d \lambda_i\) is acceptably close to 1. We seek more sophisticated approaches. The key question is: what is the best way to measure the agreement between two datasets of extreme events? Future work will aim to formulate a suitable notion of error upon which to base a selection criterion for \(m\).
+
+An important question to address is whether we should be considering reconstruction error or simulation error. The analysis in Section \ref{fr-tuning-m} suggests these notions of error do not coincide; this should be confirmed through theoretical work and further numerical studies. Within each of these categories, there are several notions of error. For example, we could consider quantities such as:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  The event reconstruction error, \(\sum_{t=1}^T \snorm{\hat{\bm{x}}_t(m)-\tilde{\bm{x}}_t}\), where \(\hat{\bm{x}}_t(m)\) is the \(m\)-eigenvector reconstruction of the observed event \(\tilde{\bm{x}}_t\);
+\item
+  The empirical conditional risk, see \eqref{eq:empirical-risk};
+\item
+  The TPDM error, \(\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}\), where \(\hat{\Sigma}(m)\) is the TPDM estimated from a set of reconstructed/simulated events;
+\item
+  The \(\chi\) error, \(\snorm{\hat{\chi}(m)-\hat{\chi}}\), where \(\hat{\chi}(m)\) is the matrix of tail correlation coefficients estimated from a set of reconstructed/simulated events;
+\end{enumerate}
+
+The first measure is unlikely to be useful, because it will be distorted by the inaccurate magnitudes of the reconstructed events, whereas our focus is on capturing the dependence structure. The tail correlation measure \(\chi\) is more robust than the TPDM in terms of its sensitivity to very extreme events in the dataset, so the fourth measure may be superior to the third. Some of these measures may be susceptible to rewarding overfitted models. A simulated event set that closely matches the observed event set will achieve a low error but is not useful in practice.
+
+\hypertarget{tpdm-estimators}{%
+\section{TPDM estimators}\label{tpdm-estimators}}
+
+Recall from Section \ref{estimation-tpdm} that there are two different TPDM estimators being used in the literature. The vector-based estimator is a much more natural estimator, in the sense that it satisfies the theoretical properties of the TPDM, but it may perform poorly if extremal behaviour is highly localised. This trade-off is somewhat unsatisfactory and hints at a broader underlying issue. Therefore, we propose a critical comparison of the TPDM estimators and exploring ways they can be improved.
+
+\hypertarget{bias-correction}{%
+\subsection{Bias correction}\label{bias-correction}}
+
+A first step for improving the TPDM estimator is to reduce bias. Threshold-based estimators are known to overestimate dependence between weakly dependent variables \autocite{huserLikelihoodEstimatorsMultivariate2016}. \textcite{fixSimultaneousAutoregressiveModels2021} address this by imposing that extremal dependence is close to zero at large distances. This assumption is reasonable in some applications (e.g.~extreme precipitation on a large spatial domain) but not in others. For example, in an analysis of extreme river flow, two flow-connected sites may exhibit extremal dependence even if they are far apart, so it is more appropriate to correct bias based on the graph structure of the river network. However, this is counter to the spirit of our methods, which are supposed to be data-driven without the need to incorporate prior domain knowledge. Here we may turn to the wider extremes literature. The techniques described in \textcite{ledfordStatisticsIndependenceMultivariate1996} might provide a useful starting point. They use so-called censored estimators to deal with the issues encountered when estimating the dependence between variables that are near independence. On the basis of results obtained via simulation studies, \textcite{huserLikelihoodEstimatorsMultivariate2016} also recommend censored estimators, as well as choosing higher thresholds.
+
+\hypertarget{permitting-asymptotic-independence}{%
+\subsection{Permitting asymptotic independence}\label{permitting-asymptotic-independence}}
+
+A similar, but separate, issue is to generalise extremal PCA so that it doesn't assume asymptotic dependence. Asymptotic independence is a degenerate case within the multivariate regular variation framework that underlies current methods, which cannot be attained from finite samples. We now outline some possible ways this could be achieved. Future work will involve testing and comparing these methods and/or devising some other new methodology.
+
+An initial idea is to determine whether extremal PCA could be adapted to work with an alternative notion of regular variation called sparse regular variation \autocite{meyerSparseRegularVariation2021}. Sparse regular variation redefines the angular component from \(\bm{X}/\snorm{\bm{X}}\) to \(\pi(\bm{X}/t)\), where \(t\) is the radial threshold and \(\pi\) is the Euclidean projection onto the unit simplex. Unlike with the self-normalised vector, the projected points need not lie in the interior of the simplex. Therefore, sparse regular variation better captures the sparse structure of \(H\) and permits asymptotic independence. Unfortunately, the independence between the radial and angular components is lost (though the dependence relation is known), so adapting extremal PCA for this framework may be complicated.
+
+A second approach to consider is employ clustering before estimating the TPDM. Specifically, we partition the components of \(\bm{X}\) into clusters, estimate the TPDM within each cluster separately, and then combine the cluster-based TPDMs to form the overall TPDM estimate. The inter-cluster entries of \(\hat{\Sigma}\) are set equal to zero, meaning that components in different clusters are assumed to be asymptotically independent. Remark 3.3 in \textcite{fomichovDetectionGroupsConcomitant2020}, which alludes to links between spherical clustering and extremal PCA, may provide useful insight into the underlying theory of this idea. Figure \ref{fig:fr-tpdm-clusters-levelplot} illustrates the result when this process is applied to the French rainfall data. The left plot shows the standard vector-based TPDM estimate we computed earlier, for reference. The right-hand TPDM is computed after performing clustering using the methodology of \textcite{bernardClusteringMaximaSpatial2013}, i.e.~the PAM algorithm with F-madogram distances and \(K=5\). Introducing this additional step means there are now two hyperparameters (\(K\) and \(m\)) to be tuned.
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.48\linewidth]{figures/fr-tpdm-clusters-levelplot-1} \includegraphics[width=0.48\linewidth]{figures/fr-tpdm-clusters-levelplot-2} 
+
+}
+
+\caption[Example of a TPDM estimate obtained after clustering.]{Left: the standard vector-based TPDM estimate for the French rainfall data. Right: the cluster vector-based TPDM estimate obtained after performing PAM clustering with F-madogram distances and $K=5$.}\label{fig:fr-tpdm-clusters-levelplot}
+\end{figure}
+
+A third possible approach is very similar to the previous method, except the clustering step is replaced with another method for detecting the dependence structure. For example, there are a range of existing methods for detecting the faces of the unit sphere charged with \(H\)-mass \autocite{goixSparseRepresentationMultivariate2017,simpsonDeterminingDependenceStructure2019,meyerSparseRegularVariation2021}; the TPDM can then be estimated separately on each face.
+
+\hypertarget{performing-extremal-pca-with-large-m}{%
+\section{\texorpdfstring{Performing extremal PCA with large \(m\)}{Performing extremal PCA with large m}}\label{performing-extremal-pca-with-large-m}}
+
+In their study of extreme rainfall in the UK, \textcite{rohrbeckSimulatingFloodEvent2021} found that six extremal principal components were sufficient to describe large-scale extremal behaviour. In other applications, such as the French rainfall data, a larger number may be required. In such cases where drastic dimension reduction is not feasible, we may be need to perform extremal PCA with moderate or large \(m\).
+
+One approach is to explore whether there is any structure in the extremal principal components that can be exploited. We know that the extremal principal components are not asymptotically independent, but they do satisfy a property that implies balance between quadrants \autocite[Section 5]{cooleyDecompositionsDependenceHighdimensional2019}. It is worth investigating whether this or some other structure can be exploited. As a starting point, we could try applying one of the clustering or face detection techniques to identify groups of extremal principal components with strong dependence, and then fit submodels to each of these groups.
+
+Another approach is to explore alternatives to kernel density estimation (KDE) when fitting the flexible model for the leading components of \(H_V\). KDE performance tends to worsen in high dimensions \autocite{wangNonparametricDensityEstimation2019}, so we will consult the literature to find suitable alternative models for spherical data. The semi-parametric mixture models (which become fully-parametric when the number of mixture components is fixed) are potential candidates.
+
+\hypertarget{uncertainty-quantification}{%
+\section{Uncertainty quantification}\label{uncertainty-quantification}}
+
+At present, the methodology does not include any considerations for uncertainty quantification. Uncertainty arises at several occasions in the modelling process, such as the estimation of the marginal distributions, the estimation of the TPDM, and fitting the KDE for \(\bm{Z}\). Initially, we will focus on quantifying uncertainty in the TPDM and studying how it propagates through to the simulations. A natural way to estimate uncertainty is via a non-parametric bootstrap procedure. Suppose we are given a set of \(n\) observations of a random vector \(\bm{X}\). For simplicity, we would initially consider a case where the marginal transformation has already been performed, and the true distribution of \(\bm{X}\) is known, e.g.~\(d\)-variate max-stable Hüsler-Reiss. We then sample with replacement from the original set of observations, estimate the TPDM, and generate a set of samples of \(\bm{X}\). Then one can study the sampling distribution of the TPDM estimates and estimate the bias and variance. Moreover, if we have a way of estimating the optimal \(m\) (Section \ref{choosing-m-in-applications}), we can also study variation in the estimates \(\hat{m}\) - \textcite{fixSimultaneousAutoregressiveModels2021} employ this approach to derive confidence intervals for the SAR parameter \(\rho\). The procedure of computing a large number of bootstrapped TPDMs may lead to better approximations for the distribution of \(\bm{X}\) (this can be checked in a simulation setting) - if this is the case, it opens up another route for advancing the methodology.
+
+\startappendices
+
+\hypertarget{sim-hr}{%
+\chapter{\texorpdfstring{Simulating \(d\)-variate max-stable Hüsler-Reiss data}{Simulating d-variate max-stable Hüsler-Reiss data}}\label{sim-hr}}
+
+\hypertarget{framework-and-assumptions}{%
+\section{Framework and assumptions}\label{framework-and-assumptions}}
+
+The unit sphere on the non-negative orthant \(S_+^{d-1}\) can be partitioned into \(2^d-1\) subspaces, called faces, given by
+\begin{equation}
+\mathcal{E}_I = \{\bm{\theta}\in\mathbb{S}_+^{d-1}:\theta_i>0\,\forall i\in I, \, \theta_j=0\,\forall j\notin I\},
+\label{eq:unit-sphere-faces}
+\end{equation}
+for \(I\in\mathcal{P}(V)\setminus \emptyset\), where \(\mathcal{P}(V)\) is the power set of \(V=\{1,\ldots,d\}\). The face \(\mathcal{E}_I\) being charged with \(H\)-mass, i.e.~\(H(\mathcal{E}_I)>0\), indicates that the group of components \((X_i:i\in I)\) may be concomitantly extreme while the components \((X_i:i\notin I)\) are much smaller.
+
+We consider the very simple scenario where there exists a partition of the index set such that asymptotic independence is present between groups but not necessarily within groups. Formally, assume there exists \(2\leq k\leq d\) and a partition \(I_1\cup\cdots\cup I_k = V\) such that the faces \(\mathcal{E}_{I_1},\ldots,\mathcal{E}_{I_k}\) form the support of the angular measure. Without loss of generality, assume that all indices in \(I_l\) are smaller than those in \(I_m\) for all \(1\leq l<m\leq k\). Then the faces \(\mathcal{E}_{I_1},\ldots,\mathcal{E}_{I_k}\) can be specified simply by providing their dimensions \(d_1,\ldots,d_k\), where \(d_i=\abs{I_i}\) for \(i=1,\ldots,k\). Finally, define face labels \(C_1,\ldots,C_d\) such that \(C_i=m\) indicates that \(i\in I_m\).
+
+The random vector of interest, \(\bm{X}\), is taken to have a \(d\)-variate max-stable Hüsler-Reiss (HR) distribution \autocite{engelkeEstimationHuslerReissDistributions2015}. The dependence structure is parametrised by a conditionally negative definite matrix \(\Gamma\in\R^{d\times d}\), called the variogram. The strength of dependence between \(X_i\) and \(X_j\) is controlled by \(\Gamma_{ij}\) via the relation \(\chi_{ij}=2\bar{\Phi}(\sqrt{\Gamma_{ij}}/2)\), where \(\bar{\Phi}\) is the survival function of the standard normal distribution. The HR distribution captures all levels of dependence, from complete asymptotic dependence for \(\Gamma_{ij}=0\) to asymptotic independence for \(\Gamma_{ij}\to\infty\).
+
+\hypertarget{simulation-methodology}{%
+\section{Simulation methodology}\label{simulation-methodology}}
+
+\textcite{fomichovDetectionGroupsConcomitant2020} describe a procedure for generating such data with \(k=2\) faces. We extend the algorithm for arbitrary \(2\leq k\leq d\) as follows:
+
+\begin{enumerate}
+\item Generate a collection of independent random vectors $\bm{h}_1,\ldots,\bm{h}_d\in\R^d$ whose components are independent, identically distributed Pareto random variables with shape parameter 2.5.
+\item Fix $L\in\R$ a large constant and $\beta>0$. Generate the variogram by setting
+\begin{equation*}
+\Gamma_{ij} = \begin{cases}
+\frac{\beta}{d}\norm{\bm{h}_i - \bm{h}_j}_2^2, & \text{if $C_i=C_j$} \\
+L, & \text{if $C_i\neq C_j$}.
+\end{cases}
+\end{equation*}
+\item Generate samples of $\bm{X}\sim\mathrm{HüslerReiss}(\Gamma)$, e.g.\ using the \texttt{rmstable} function from the \texttt{graphicalExtremes} package in \textsf{R}.
+\end{enumerate}
+
+The parameter \(\beta\) scales the distribution of the extremal dependence coefficients, thereby controlling the strength of the within-group extremal dependence. Setting \(\Gamma_{ij}=L\) enforces asymptotic independence between groups, since \(\chi_{ij} = 2\bar{\Phi}(\sqrt{L}/2)\approx 0\).
+
+%%%%% REFERENCES
+
+\setlength{\baselineskip}{0pt} % JEM: Single-space References
+
+{\renewcommand*\MakeUppercase[1]{#1}%
+\printbibliography[heading=bibintoc,title={\bibtitle}]}
+
+\end{document}

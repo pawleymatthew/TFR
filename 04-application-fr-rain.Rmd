@@ -1,0 +1,309 @@
+# Application to the France rainfall data {#application-fr-rain}
+\chaptermark{Application to the France rainfall data}
+\minitoc
+
+This chapter illustrates how extremal PCA is applied using a real-world dataset from climatology. In Section \@ref(fr-pca-analysis), we perform an analysis of extreme rainfall in France using the framework of @cooleyDecompositionsDependenceHighdimensional2019. Then the sampling algorithm of @rohrbeckSimulatingFloodEvent2021 is applied in Section \@ref(fr-generate-events) to generate synthetic extreme rainfall events. The underlying theoretical details for these methods were summarised in Section \@ref(pca-tpdm); the emphasis of this chapter is showing how these tools are used in practice. From this exercise we can identify limitations/deficiencies that could be addressed by future research, which will be discussed in the next chapter. 
+
+## Data description
+
+The French precipitation dataset consists of the weekly maxima of hourly precipitation measured at $d=92$ weather stations in France during the autumn season (September-November) between 1993 and 2011^[The data was collected by Météo-France, the French meteorological service, and is available from the homepage of the second author of @bernardClusteringMaximaSpatial2013 at [https://www.lsce.ipsl.fr/Phocea/Pisp/visu.php?id=109&uid=naveau](https://www.lsce.ipsl.fr/Phocea/Pisp/visu.php?id=109&uid=naveau).]. The weather stations provide a fairly complete and homogeneous coverage of France, as illustrated in Figure \@ref(fig:fr-stations-map). There are $T=228$ weeks of recorded rainfall maxima at each station, with no missing data. Figure \@ref(fig:fr-data-time-series) shows the time series recorded at Montereau-sur-le-Jard (a commune near Paris) and Tarbes–Lourdes–Pyrénées Airport (on the southwest coast). These stations are marked in red in Figure \@ref(fig:fr-stations-map). An important assumption underlying our methods is that there is no serial dependence within the time series. This assumption seems reasonable for hourly precipitation maxima taken over weekly periods and the autocorrelograms in Figure \@ref(fig:fr-data-time-series) provide further assurance. 
+
+```{r load-fr-data}
+load(file = "Code/Data/MaxPrecipFallFrance.RData")
+fr <- list()
+fr$X <- as.matrix(MaxPrecipFallFrance$precip)
+fr$long <- MaxPrecipFallFrance$longitudes
+fr$lat <- MaxPrecipFallFrance$latitudes
+```
+
+```{r fr-stations-map, fig.cap="The locations of the 92 Météo-France weather stations. Montereau-sur-le-Jard and Tarbes–Lourdes–Pyrénées Airport are marked in red.", fig.path='figures/', fig.scap="Map of Météo-France weather stations.", dev='pdf', out.width="65%", fig.align='center'}
+# create map
+par(bg="white")
+neighbors <-  c("France","Spain","Germany","Belgium","Italy","Switzerland","Luxembourg", "Netherland","Monaco","Andorra", "UK", "Ireland", "Isle of Man", "Isle of Wight", "Liechtenstein", "Austria", "Czechoslovakia", "Sardinia", "Portugal")
+map("worldHires", neighbors, col = "#AAD1AC", fill = T, bg = "#9DDBFF", xlim = c(-8.1,12.6), ylim = c(41.3,51.2), mar=c(0.05,0,0.05,0))
+map("worldHires", "France", col = "#AAD1AC", fill = T, add = T)
+#map("worldHires", "France", col = "grey95", fill = T, xlim = c(-5.0,9.5), ylim = c(41.5,51), mar=c(0,0,0,5))
+# plot all stations in black, except selected stations in red
+highlight_stations <- c(76, 64)
+highlight_names <- c("Montereau-sur-le-Jard", "Tarbes-Lourdes-Pyrénées")
+points(fr$long[-highlight_stations], fr$lat[-highlight_stations], col = "black", pch = 20, cex = 1.4)
+points(fr$long[highlight_stations], fr$lat[highlight_stations], col = "red", pch = 20, cex = 1.4)
+```
+
+```{r fr-data-time-series, fig.cap="Top: weekly maxima of hourly precipitation recorded at Montereau-sur-le-Jard (left) and Tarbes–Lourdes–Pyrénées Airport (right). Bottom: the autocorrelograms for each time series. The dashed lines indicate the 95\\% confidence intervals.", fig.path='figures/', fig.scap="Raw time series and autocorrelograms for two weather stations.", dev='pdf', out.width="100%"}
+par(mfrow = c(2,2), mar = c(3,3,2,3))
+for (i in seq_along(highlight_stations)){
+  plot(seq_along(fr$X[,highlight_stations[i]]), as.numeric(fr$X[,highlight_stations[i]]), 
+     type = "l", 
+     xlab = "Week", ylab = "Maximum hourly precipitation (mm)",
+     cex.lab = 0.7, cex.axis = 0.7,
+     mgp=c(1.5,0.5,0))
+  title(highlight_names[i], line = 0.5, cex.main = 0.7)
+}
+for (i in seq_along(highlight_stations)){
+  par(mgp=c(1.5,0.5,0))
+  acf(as.numeric(fr$X[,highlight_stations[i]]), 
+      xlab = "Lag", ylab = "Autocorrelation", main = "",
+     cex.lab = 0.7, cex.axis = 0.7)
+  title(highlight_names[i], line = 0.5, cex.main = 0.7)
+}
+```
+
+```{r fr-order-by-long}
+longorder <- order(fr$long)
+fr$X <- fr$X[,longorder]
+fr$long <- fr$long[longorder]
+fr$lat <- fr$lat[longorder]
+```
+
+## Analysing extremal dependence using extremal PCA {#fr-pca-analysis}
+
+### Data preprocessing
+
+Let $X_{t,i}$ denote the random variable representing the maximum hourly precipitation at station $i$ during week $t$, for $i=1,\ldots,d$ and $t=1,\ldots,T$, and let $\bm{X}_t=(X_{t,1},...,X_{t,d})$. We apply a transformation to $\bm{X}_t$ in order to obtain a random variable $\tilde{\bm{X}}_t = (\tilde{X}_{t,1},\ldots,\tilde{X}_{t,d})$ that is regularly varying with tail index $\alpha=2$ and has Fréchet margins, $\Prob{\tilde{X}_{t,i}\leq x} = \exp(-x^{-2})$ for $x>0$. This is achieved by defining
+\begin{equation}
+\tilde{X}_{t,i} = \left[-\log \hat{F}_i(X_{t,i})\right]^{-1/2}
+(\#eq:marginal-transformation)
+\end{equation}
+for $i=1,\ldots,d$ and $\, t=1,\ldots,T$, where $\hat{F}_i$ is an estimate of the distribution function for the weekly precipitation maxima at station $i$. Here we take $\hat{F}_i$ to be the empirical CDF obtained by a rank transform; a more sophisticated semi-parametric approach is outlined in @rohrbeckSimulatingFloodEvent2021. Let $\tilde{\bm{x}}_1,\ldots,\tilde{\bm{x}}_T$ be the set of transformed observations obtained by applying the transformation \@ref(eq:marginal-transformation) to the original measurements $\bm{x}_1,\ldots,\bm{x}_T$.
+
+### Estimation of the TPDM {#estimation-tpdm}
+
+Next, we estimate the tail pairwise dependence matrix (TPDM), $\Sigma$. There are two estimators used in the literature. The first approach, used by @cooleyDecompositionsDependenceHighdimensional2019 and @rohrbeckSimulatingFloodEvent2021, is to threshold observations based on the entire vector. Define $r_t=\snorm{\tilde{\bm{x}}_t}_2$ and set $r^\star$ as some high quantile of $\{r_t : t=1,\ldots,T\}$. Let $\mathcal{T}^\star=\{t:r_t>r^\star\}$ represent the set of times at which extreme events occurred and denote by $\bm{w}_{t}=\tilde{\bm{x}}_{t}/r_t$ the associated angular components. Then the vector-based TPDM estimate is defined as the $d\times d$ matrix $\hat{\Sigma}^{(v)}$ with entries
+\begin{equation}
+\hat{\Sigma}_{i,j}^{(v)} = \frac{d}{\sabs{\mathcal{T}^\star}}\sum_{t\in\mathcal{T}^\star} w_{t,i}w_{t,j}.
+(\#eq:vector-based-tpdm-estimate)
+\end{equation}
+The second approach, adopted by @jiangPrincipalComponentAnalysis2020, is based on pairwise radial thresholds. For $i,j\in\{1,\ldots,d\}$, define the radius $r_{t,i,j}=\snorm{(\tilde{x}_{t,i},\tilde{x}_{t,j})}_2$. Choose a high radial threshold $r_{i,j}^\star$ of $\{r_{t,i,j} : t=1,\ldots,T\}$ and define $\mathcal{T}_{i,j}^\star=\{t:r_{t,i,j}>r_{i,j}^\star\}$. In a slight abuse of notation, define the angular components $(w_{t,i},w_{t,j})=(x_{t,i},x_{t,j})/r_{t,i,j}$.  Then the pairs-based TPDM estimate is defined as the $d\times d$ matrix $\hat{\Sigma}^{(p)}$ with entries
+\begin{equation}
+\hat{\Sigma}_{i,j}^{(p)} = \frac{2}{\sabs{\mathcal{T}^\star_{i,j}}}\sum_{t\in\mathcal{T}^\star_{i,j}} w_{t,i}w_{t,j}.
+(\#eq:pairs-based-tpdm-estimate)
+\end{equation}
+This matrix is not guaranteed to be positive definite, which is required for PCA. This issue is resolved by taking the final estimate $\hat{\Sigma}^{(p)}$ as the nearest (in terms of Frobenius norm) positive definite matrix to the matrix obtained from \@ref(eq:pairs-based-tpdm-estimate). Another issue with this estimator is that the interpretation of the diagonal elements in terms of the components' scales is lost. In fact, it is easy to show that $\hat{\Sigma}_{i,i}^{(p)}=1$ for all $i$.
+
+The key difference between the estimators is that $\hat{\Sigma}_{i,j}^{(v)}$ uses observations that are extreme globally (even if $X_i$ and $X_j$ themselves are not large) while $\hat{\Sigma}_{i,j}^{(p)}$ is based on events for which $X_i$ and $X_j$ are large (irrespective of the size of the other components). For this reason, the pairs-based estimator might be preferred for analyses where behaviour is expected to be highly localised, e.g.\ if the study region is large. Our spatial domain is larger than those of @cooleyDecompositionsDependenceHighdimensional2019 and @rohrbeckSimulatingFloodEvent2021 but smaller than that of @jiangPrincipalComponentAnalysis2020, so it is not obvious which estimator we should prefer. Both estimates for $\Sigma$, based on radial thresholds taken at the empirical 85\% quantile, are illustrated in Figure \@ref(fig:fr-tpdm-levelplot). The stations are ordered by increasing longitude (i.e.\ from south to north). Apart from the differences in scaling the two matrices are quite similar, structurally speaking. Subsequent examination of their respective eigenpairs revealed no discernible differences. Therefore we proceed with the vector-based estimate on the basis that it is simpler, faster to compute, and satisfies all the properties of a TPDM. Henceforth, $\hat{\Sigma}$ denotes the vector-based estimate, unless stated otherwise.
+
+@huserLikelihoodEstimatorsMultivariate2016 note that threshold-based estimators have a tendency to overestimate dependence when the true dependence is weak/moderate. In order to mitigate this bias, @fixSimultaneousAutoregressiveModels2021 modify the estimator such that $\hat{\Sigma}_{ij}$ is close to zero if the distance between stations $i$ and $j$ is large. This assumption is reasonable due to the localised nature of extreme rainfall events. For simplicity, we opt not incorporate any bias correction into our estimate, but it is worth investigating in future. 
+
+```{r fr-PCA}
+Xtilde <- prepPCA(fr$X)
+Sigmav <- estTPDM(Xtilde, method = "v", u = 0.85)
+Sigmap <- estTPDM(Xtilde, method = "p", u = 0.85)
+PCAv <- extremePCA(Xtilde, Sigmav)
+PCAp <- extremePCA(Xtilde, Sigmap)
+```
+
+```{r fr-tpdm-levelplot, fig.align='center', fig.cap="Entries $\\hat{\\Sigma}_{ij}$ of the vector-based (left) and pairs-based (right) TPDM estimates. The radial thresholds were set as the empirical 85\\% quantile.", fig.path='figures/', fig.scap="Entries of the vector- and pairs-based TPDM estimates. ", fig.show="hold", dev='pdf', out.width="48%"}
+levelplotmatrix(Sigmav, xlab = "i", ylab = "j")
+levelplotmatrix(Sigmap, xlab = "i", ylab = "j")
+```
+
+### Examining the eigenvalues {#fr-eigenvalues}
+
+We perform an eigendecomposition of $\hat{\Sigma}$ to obtain $\hat{\Sigma}=\hat{U}\hat{D}\hat{U}^T$, where $\hat{D}$ is a diagonal matrix of real eigenvalues $\lambda_1\geq\lambda_2\geq\ldots\geq\lambda_d>0$ and $\hat{U}$ is a $d\times d$ unitary matrix whose columns are the corresponding eigenvectors $\hat{\bm{u}}_1,\ldots,\hat{\bm{u}}_d\in\R^d$. 
+
+```{r}
+evals <- PCAv$lambda
+```
+
+Figure \@ref(fig:fr-tpdm-evals) shows a scree plot of the first 30 eigenvalues of $\hat{\Sigma}$. The first eigenvalue is very large; thereafter the values slowly decrease to zero. The first six eigenvalues are $(\lambda_1,\ldots,\lambda_6)=(`r round(evals[1:6], digits=1)`)$. This implies that the first six principal components account for $`r round(100*sum(evals[1:6])/sum(evals), digits=0)`\%$ of the total scale of $\tilde{\bm{X}}$. For comparison, studies of extreme rainfall in the continental US and a small region of the UK found that the first six eigenvectors accounted for 41\% and 88\% of the scale, respectively [@jiangPrincipalComponentAnalysis2020; @rohrbeckSimulatingFloodEvent2021]. The differences between these values are in accordance with the sizes of the study regions and the degree to which extreme events are localised. We conclude that extreme precipitation in France is quite localised and a large number of eigenvectors will be required to reconstruct small-scale features of extreme events.
+
+```{r fr-tpdm-evals, echo=FALSE, fig.cap="Eigenvalues of the first 30 eigenvalues of the TPDM on a log scale.", fig.scap="Eigenvalues of the TPDM.", out.width="70%", fig.align='center', fig.path='figures/', dev='pdf'}
+plot(PCAv$lambda[1:30], pch=20, cex=0.8, xlab="Index", ylab="Eigenvalue", log = "y")
+```
+
+### Interpreting the eigenvectors
+
+The leading eigenvectors reveal the large-scale spatial behaviour of extreme rainfall events in France. Spatial representations of first six eigenvectors are shown in Figure \@ref(fig:fr-tpdm-evecs). The first eigenvector, $\hat{\bm{u}}_1$, is positive and accounts for the magnitude of extreme events. The spatial patterns in $\hat{\bm{u}}_1$ do not necessarily reflect the marginal law behaviour at each site, cf.\ Figure 1b in @bernardClusteringMaximaSpatial2013. This is primarily because we are working with standardised data, for which 'extreme' should be interpreted as 'extreme relative to the climate at that location'. The second eigenvector reveals a north-south signal. This divide can be justified climatologically: extreme events in the south are due to thunderstorms caused by warm air interacting with the mountainous regions (Pyrénées/Cévennes/Alps); heavy rainfall in the north is produced by midlatitude perturbations [@bernardClusteringMaximaSpatial2013]. The third eigenvector shows a strong negative signal on the south-west coast. An east-west divide along the southern coast makes sense because extreme events originating in Toulon or Nice tend to not to affect areas to the west of Montpellier. The subsequent eigenvectors reveal more localised patterns in extremal behaviour and are more difficult to interpret. 
+
+```{r fr-tpdm-evecs, echo=FALSE, fig.cap="First six eigenvectors of the TPDM.", fig.scap="First six eigenvectors of the TPDM.", out.width="100%", fig.align='center', fig.path='figures/', dev='pdf'}
+# number of eigenvectors to plot
+num_evecs <- 6
+# plot eigenvectors
+par(mfrow=c(ceiling(num_evecs/3),3))
+col_loc <- c(brewer.pal(3,"Reds")[3:2], "white", brewer.pal(3,"Blues")[2:3])
+for (i in 1:num_evecs){
+  z <- max(abs(PCAv$U[,i]))
+  temp <- seq(-z-1e-4, z+1e-4, length.out = 6)
+  # prepare map
+  map("worldHires", "France", col = "grey85", fill = T, xlim = c(-5.0,9.5), ylim = c(41.5,51), mar = c(2,0.5,2,0.5))
+  # map.axes(xaxt = 'n', yaxt = 'n', ann = FALSE)
+  title(bquote(hat(bold(u))[.(i)]), line = 0.8)
+  for (k in 1:92){
+    temp_k <- sum(PCAv$U[k,i] > temp)
+    points(fr$long[k], fr$lat[k], pch=20, cex=0.8, col=col_loc[temp_k])
+  }
+  colkey(side = 1, col = col_loc, 
+         clim = c(min(temp), max(temp)), breaks = round(temp, 2),
+         dist = -0.1, cex.axis = 0.8, mgp = c(3, 0.3, 0), add = T)
+}
+```
+
+### Analysing the extremal principal components 
+
+Finally, we study the extremal principal components given by $\bm{v}_t = \hat{\bm{U}}^T\tau^{-1}(\tilde{\bm{x}}_t)$ for $t=1,\ldots,T$. The elements of $\bm{v}_t\in\R^d$ are the stochastic basis coefficients when $\tilde{\bm{x}}_t$ is decomposed into the basis $\tau(\hat{\bm{u}}_1),\ldots,\tau(\hat{\bm{u}}_d)$. Figure \@ref(fig:fr-tpdm-pcs) shows time series plots of the extremal principal components associated with the first three eigenvectors. The points highlighted in red correspond to the weeks for which $r_t=\snorm{\tilde{\bm{x}}_t}_2$ exceeds the 95\% quantile of $\{r_t:t=1,\ldots,T\}$. Importantly, note that the extremes of $\bm{V}$ tend to coincide with the extremes of $\tilde{\bm{X}}$. 
+
+The role of the principal components is most easily illustrated by exploring an observed extreme event. Figure \@ref(fig:fr-event-181) shows an array of plots associated with the event in week $t=181$. The top left plot is a spatial representation of the event (after marginal transformation). Extreme rainfall intensities occurred in the mountainous region to the south/east of Lyon. The top right plot shows the elements of $\bm{v}_{181}$. Roughly speaking, the sizes of the $\abs{V_{t,i}}$ tell us which eigenvectors are most important for capturing the event's spatial dynamics, since $V_{t,i}$ represents the coefficient associated with the $i$th eigenvector in the reconstruction. In this sense, the four most important eigenvectors are the first, second, third and seventeenth eigenvectors. Spatial representations of these eigenvectors are plotted in the second row of Figure \@ref(fig:fr-event-181) (the first eigenvector is omitted because it isn't particularly informative). The third eigenvector is hit by a large positive coefficient, which primarily allocates precipitation to the south east region. The negative coefficient $V_{181,2}$ diminishes the signal in the north and further boosts the signal in the south east. The seventeenth eigenvector captures very small-scale behaviours and serves to amplify the signal at the specific sites where the rainfall intensity was strongest (near Lyon and Avignon). The plots in the third and fourth rows of Figure \@ref(fig:fr-event-181) show a series of low-dimensional reconstructions of $\tilde{\bm{x}}_{181}$ obtained by truncating the sum in \@ref(eq:pca-reconstruction). Note that the first four reconstructions have scaling issues: the intensities are generally too low because the omitted eigenvectors account for a non-negligible amount of scale. The eigenvalues of $\hat{\Sigma}$ decrease quite gradually, so this is only resolved once a large number of eigenvectors are added. The spatial attribution of rainfall improves as more principal components are added. The two-eigenvector reconstruction allocates rainfall too broadly; we know that the unused third eigenvector is important in restricting rainfall to the south east. The five eigenvector reconstruction looks much better but still overestimates rainfall in parts of the north. After 20 eigenvectors the reconstructed event looks quite accurate with only minor discrepancies, but the overall scale is still too low. The 45 eigenvector reconstruction matches the full basis reconstruction almost perfectly, because the omitted eigenvectors account for negligible scale ($\lambda_i\approx 0$ for $i>45$) and their coefficients in the basis expansion are approximately zero (top right plot). 
+
+```{r fr-tpdm-pcs, fig.align='center', fig.cap="Time series of the observed extremal principal components. The weeks for which $r_t=\\snorm{\\tilde{\\bm{x}}_t}_2$ exceeds the 95\\% quantile of $\\{r_t:t=1,\\ldots,T\\}$ are highlighted in red.", fig.height=2.7, fig.path='figures/', fig.scap="Time series of the observed extremal principal components.", dev='pdf', out.width="100%"}
+# number of PCs to plot
+num_pcs <- 3
+# find largest observed events
+r <- sqrt(rowSums(Xtilde^2))
+u <- 0.95
+rstar <- quantile(r, u, na.rm = TRUE)
+bigr <- which(r > rstar)
+# plot PCs
+par(mfrow = c(1,3))
+for (i in 1:num_pcs){
+  # find min and max PC - used for y axis labels
+  at_Vi <- c(min(PCAv$V[,i]), max(0, min(PCAv$V[,i])), max(PCAv$V[,i]))
+  # set graphical parameters
+  par(mar = c(4, 3, 2.5, 2), mgp = c(1.5, 0.5, 0))
+  # plot ith PC and mark the largest observed events
+  plot(PCAv$V[,i], type = "l", yaxt = "n", xlab = "Week, t", ylab = "", cex.axis = 0.7, cex.lab = 0.8)
+  title(ylab = bquote(V[t][","][.(i)]), cex.lab = 1)
+  axis(side = 2, at = at_Vi, labels = round(at_Vi, digits = 0), cex.axis = 0.7)
+  abline(h = 0, col = "black", lty = 1, lwd = 0.5)
+  points(x = bigr, y = PCAv$V[bigr,i], pch = 20, cex = 0.8, col = "red")
+}
+```
+
+```{r fr-event-181, fig.align='center', fig.cap="Exploration of the extreme event at $t=181$. Top left: the observed event (after marginal transformation). Top right: the components of $\\bm{v}_{181}$, with the three biggest components in absolute value (excluding the first principal component) highlighted in red. Second row: the eigenvectors corresponding to the highlighted principal components. Third and fourth rows: reconstructions based on a limited number of the leading eigenvectors.", fig.path='figures/', fig.scap="Exploration of the extreme event at $t=181$.", dev='pdf', out.width="100%", fig.height=8}
+plotfrevent(t=181, Xtilde = Xtilde)
+```
+
+## Generating hazard event sets {#fr-generate-events}
+
+### Fitting the mixture distribution for $\bm{Z}$
+
+```{r fr-fit-kde-Z}
+simfr <- simXtilde(n=1200, U=PCAv$U, V=PCAv$V, u=0.85, m=4) # 12 autumn weeks per year
+kappaest <- simfr$kappa
+```
+
+We assume that the first four eigenpairs capture the large-scale dynamics of heavy rainfall events. At this stage, this choice of $m=4$ is somewhat arbitrary and the analysis in Section \@ref(fr-eigenvalues) indicates that $m$ should actually be much larger - this will be investigated later in Section \@ref(fr-tuning-m). From the principal components $\{\bm{v}_t:t=1,\ldots,T\}$ we derive a set of observations $\{\bm{z_i}\in\mathbb{S}^{5}:i=1,\ldots,n_{\text{exc}}$ of $\bm{Z}$ by following the procedure described in Section \@ref(pca-tpdm), with $r_V$ set as the empirical 85\% quantile of $\{\snorm{\bm{v}_t}_2:t=1,\ldots,T\}$. The next step is to fit a Mises-Fisher mixture distribution for $\bm{Z}$. Following the suggestion of @rohrbeckSimulatingFloodEvent2021, an estimate $\hat{\kappa}=`r round(kappaest, digits=2)`$ for the kernel bandwidth is obtained using the \texttt{vmfkde.tune} function from the \texttt{Directional} package in \textsf{R}. The \texttt{rmixvmf} function from the same package is used to generate samples from this fitted distribution. Samples of $\tilde{\bm{X}}$ can be derived from samples of $\bm{Z}$ as described earlier.
+
+### Analysing a single generated hazard event set
+
+First, we simulate a single hazard event set corresponding to a 50-year period (i.e.\ $T=600$ autumn weeks). Figure \@ref(fig:fr-sim-obs-pairwise) compares the simulated and observed events at three pairs of stations. The dependencies for the simulated events reflect those of the observed events. This rough check suggests that the sampling algorithm is performing correctly. Figure \@ref(fig:fr-sim-event-map) illustrates the three events with the largest size $\snorm{\tilde{\bm{x}}}_2$. The left plot shows an event with extremely heavy rainfall in central and south-eastern France, including at Romorantin-Lanthenay (cf. the right-hand plot in Figure \@ref(fig:fr-sim-obs-pairwise)). The middle plot shows a very widespread event; the right plot shows an event where the rainfall intensity was especially high at a single site near Paris. This information is useful to practitioners for risk assessment/mitigation purposes.  
+
+```{r fr-sim-obs-pairwise, fig.align='center', fig.cap="Pairwise plots for the simulated (grey) and observed (black) events at three pairs of stations with varying levels of extremal dependence. The simulated events are based on the 50-year hazard event set. ", fig.path='figures/', fig.scap="Simulated and observed events at three pairs of stations.", dev='pdf', out.width="100%", fig.height = 3.5}
+par(mfrow = c(1,3), mar = c(3,3,2,2), pty = "s")
+pair_stations <- rbind(c(15,16), c(1,51), c(35,89))
+station_names <- rbind(c("Niort","Cognac"), c("Brest","Perpignan"), c("Romorantin-Lanthenay","Blotzheim"))
+for (i in 1:nrow(pair_stations)){
+  plot(simfr$Xtildesample[,pair_stations[i,1]], simfr$Xtildesample[,pair_stations[i,2]], 
+     pch = 20, cex = 0.8, col = "grey",
+     xlab = station_names[i,1], 
+     ylab = station_names[i,2],
+     xlim = c(0, max(simfr$Xtildesample[,pair_stations[i,]],Xtilde[,pair_stations[i,]])+1),
+     ylim = c(0, max(simfr$Xtildesample[,pair_stations[i,]],Xtilde[,pair_stations[i,]])+1),
+     cex.lab = 0.9, cex.axis = 0.9,
+     mgp=c(1.5,0.5,0))
+  points(Xtilde[,pair_stations[i,1]], Xtilde[,pair_stations[i,2]], 
+     pch = 20, cex = 0.8, col = "black")
+}
+```
+
+```{r fr-sim-event-map, fig.align='center', fig.cap="Spatial representations of the three largest events from the simulated 50-year event set.", fig.path='figures/', fig.scap="Spatial representations of the largest three simulated events.", dev='pdf', out.width="100%"}
+par(mfrow = c(1,3), mar = c(2.5,2.5,2.5,2.5))
+for (t in order(-sqrt(rowSums(simfr$Xtildesample^2)))[1:3]){
+  long <- fr$long
+  lat  <-fr$lat
+  # plot map of the event
+  col_loc <- brewer.pal(5, "Blues")
+  temp <- seq(-1e-4, max(simfr$Xtildesample[t,])+1e-4, length.out = 6)
+  # prepare map
+  map("worldHires", "France", col = "grey90", fill = T, xlim = c(-5.0,9.5), ylim = c(41.5,51), mar = c(2.5,2.5,2.5,2.5))
+  title(bquote(tilde(bold(x))[.(t)]), line = 0.8)
+  for (k in 1:92){
+    temp_k <- sum(simfr$Xtildesample[t,k] > temp)
+    points(long[k], lat[k], pch=20, cex=0.8, col=col_loc[temp_k])
+  }
+  colkey(side = 1, col = col_loc, clim = c(min(temp), max(temp)), breaks = round(temp, 1), dist = -0.1, cex.axis = 0.8, mgp = c(3, 0.3, 0), add = T)
+}
+```
+
+### Choosing the hyperparameter $m$ {#fr-tuning-m}
+
+The choice of $m$ will impact the quality of the simulations. If $m$ is too small, then the model will fail to capture the large-scale structure of extremes and the synthetic events will be unrealistic. If $m$ is too large, then there is a risk of overfitting to the noise contained in the higher order eigenvectors, and the original statistical difficulty of estimating a high-dimensional distribution with a small effective sample size has not been avoided. This raises the question of how to select $m$, which has not been addressed thus far. We now explore two possible approaches for doing this. 
+
+The first method is inspired by the model fitting process in @fixSimultaneousAutoregressiveModels2021. They estimate the parameter $\rho$ of a spatial autoregressive (SAR) model by minimising the discrepancy $\snorm{\Sigma(\rho)-\hat{\Sigma}}_\mathrm{F}$ between $\Sigma(\rho)$, the theoretical TPDM under their model, and $\hat{\Sigma}$, the TPDM estimated from the original data. Here $\snorm{\cdot}_\mathrm{F}$ denotes the Frobenius matrix norm, given by
+\begin{equation*}
+\snorm{A}_\mathrm{F} = \sqrt{\sum_i\sum_j \abs{a_{ij}}^2} \equiv \sqrt{\mathrm{trace}(A^\star A)}.
+\end{equation*}
+The process is as follows. Fix $m$ and simulate a set of events. Then, compute the TPDM estimate $\hat{\Sigma}(m)$ using the simulated data and calculate the Frobenius distance $\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}$. This process is repeated for 1,000 hazard event sets and we take the median. The results (along with 95\% bootstrap confidence intervals) are shown in Figure \@ref(fig:fr-tpdm-m-trend) (left plot). The graph exhibits a U-shape which agrees with our earlier hypothesis that $m$ should be 'not too small' or 'not too large'. Here, $m\approx 12$ appears optimal.
+
+The second approach follows an identical process, except now we estimate $\hat{\Sigma}(m)$ based on the set of $m$-eigenvector reconstructions of the observed events. From Figure \@ref(fig:fr-event-181) we know that the quality of the reconstruction improves as $m$ increases so that we should expect $\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}$ to decrease with $m$, with diminishing returns as $m$ gets large. The results are given in the right plot in Figure \@ref(fig:fr-tpdm-m-trend). We observe that the error is not strictly decreasing. This is because the reconstructions are optimal with respect to a  metric that is different to $\snorm{\hat{\Sigma}(m)-\hat{\Sigma}}_\mathrm{F}$. The plot suggests that taking $m\approx 20$ should be sufficient. This finding tallies with our earlier comments about the sequence of reconstructions in Figure \@ref(fig:fr-event-181). However, our two approaches for choosing $m$ lead to different conclusions. This divergence, and other avenues to explore in future work, will be discussed further in the next chapter. 
+
+```{r sim-params}
+mvalssim <- seq(from=2, to=20, by=1)
+Nsim <- 500
+```
+
+
+```{r first-500-sim, eval=FALSE, include=FALSE}
+diffSigma <- matrix(NA, nrow=length(mvalssim), ncol=Nsim)
+for (i in seq_along(mvalssim)){
+  diffSigmam <- simEventSet(N=Nsim, n=300, U=PCAv$U, V=PCAv$V, u=0.9, m=mvalssim[i], Sigmaobs=Sigmav)
+  diffSigma2[i,] <- diffSigmam
+}
+save(diffSigma, file="Code/tpdm-m-sim.Rdata")
+```
+
+```{r second-500-sim, eval=FALSE, include=FALSE}
+diffSigma2 <- matrix(NA, nrow=length(mvalssim), ncol=Nsim)
+for (i in seq_along(mvalssim)){
+  diffSigmam <- simEventSet(N=Nsim, n=300, U=PCAv$U, V=PCAv$V, u=0.9, m=mvalssim[i], Sigmaobs=Sigmav)
+  diffSigma2[i,] <- diffSigmam
+}
+save(diffSigma2, file="Code/tpdm-m-sim2.Rdata")
+```
+
+```{r combine-sims, eval=FALSE, include=FALSE}
+load("Code/tpdm-m-sim.Rdata")
+load("Code/tpdm-m-sim2.Rdata")
+diffSigma <- cbind(diffSigma, diffSigma2)
+save(diffSigma, file="Code/tpdm-m-sim-1000.Rdata")
+```
+
+```{r fr-tpdm-sim-error, cache = TRUE}
+load("Code/tpdm-m-sim-1000.Rdata")
+medDiffSigma <- apply(diffSigma, 1, median, na.rm=T)
+bootmedCI <- function(vec) {
+  b <- boot(data = vec, statistic = function(x,i) median(x[i]), R = 1500)
+  bci <- boot.ci(b, conf = 0.95, type = "norm")$normal
+  return(bci[2:3])
+}
+diffSigmaCI <- apply(diffSigma, 1, bootmedCI)
+```
+
+```{r fr-tpdm-recon-error, cache = TRUE}
+mvalsrecon <- seq(from=2, to=45, by=1)
+diffSigmarecon <- rep(NA, length(mvalsrecon))
+for (i in seq_along(mvalsrecon)){
+  diffSigmam <- reconmerror(U=PCAv$U, V=PCAv$V, u=0.9, m=mvalsrecon[i], Sigmaobs=Sigmav)
+  diffSigmarecon[i] <- diffSigmam
+}
+```
+
+```{r fr-tpdm-m-trend, fig.align='center', fig.cap="The error $\\snorm{\\hat{\\Sigma}(m)-\\hat{\\Sigma}}_\\mathrm{F}$ aginst $m$. Left: when $\\hat{\\Sigma}(m)$ is estimated simulated events; we take the median over 1,000 19-year event sets and compute $95\\%$ bootstrap confidence intervals. Right: when $\\hat{\\Sigma}(m)$ is estimated based on the set of $m$-eigenvector reconstructions.", fig.path='figures/', fig.scap="Discrepancy between observed and simulated/reconstructed TPDMs against $m$.", dev='pdf', out.width="100%", fig.height=3}
+par(mfrow=c(1,2), mar = c(3,3,2,2), mgp=c(1.5,0.5,0))
+plot(x = mvalssim, y = medDiffSigma, 
+     pch = 20, cex = 0.8, col = "black",
+     ylim = c(min(diffSigmaCI[1,])-0.1, max(diffSigmaCI[2,])+0.1),
+     xlab = "m", ylab = "Simulated TPDM error",
+     cex.lab = 0.8, cex.axis = 0.8)
+polygon(c(mvalssim,rev(mvalssim)),
+        c(diffSigmaCI[1,],rev(diffSigmaCI[2,])), col="#4682B440", border=NA)
+lines(x = mvalssim, y = medDiffSigma, 
+     type = "l", lty = 1, col = "black")
+plot(x = mvalsrecon, y = diffSigmarecon,
+     pch = 20, cex = 0.8, col = "black",
+     xlab = "m", ylab = "Reconstructed TPDM error",
+     cex.lab = 0.8, cex.axis = 0.8)
+lines(x = mvalsrecon, y = diffSigmarecon, 
+     type = "l", lty = 1, col = "black")
+```
+
